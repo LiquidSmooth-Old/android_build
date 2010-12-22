@@ -1412,6 +1412,11 @@ ifeq ($(TARGET_UNIFIED_DEVICE),)
     $(INTERNAL_OTA_PACKAGE_TARGET): override_prop := false
 else
     $(INTERNAL_OTA_PACKAGE_TARGET): override_prop := true
+
+ifeq ($(LS_BUILD),true)
+    $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
+else
+    $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
 endif
 
 $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
@@ -1421,6 +1426,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	$(OTA_FROM_TARGET_SCRIPT) -v \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
+	   --backup=$(backuptool) \
 	   --override_device=$(override_device) \
 	   --override_prop=$(override_prop) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
