@@ -34,9 +34,7 @@ PRODUCT_PACKAGES := \
     Launcher2 \
     Music \
     MusicFX \
-    Provision \
     Phone \
-    QuickSearchBox \
     Settings \
     SystemUI \
     CalendarProvider \

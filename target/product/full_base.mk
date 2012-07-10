@@ -24,13 +24,7 @@ PRODUCT_PACKAGES := \
     libdrmframework \
     libdrmframework_jni \
     libfwdlockengine \
-    OpenWnn \
-    PinyinIME \
-    libWnnEngDic \
-    libWnnJpnDic \
-    libwnndict \
-    VideoEditor \
-    WAPPushManager
+    VideoEditor 
 
 PRODUCT_PACKAGES += \
     Galaxy4 \
