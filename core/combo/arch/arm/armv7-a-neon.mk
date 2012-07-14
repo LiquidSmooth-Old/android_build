@@ -25,4 +25,8 @@ arch_variant_cflags += \
     -mfpu=neon
 
 arch_variant_ldflags := \
+ifneq (,$(findstring cpu=cortex-a9,$(TARGET_EXTRA_CFLAGS)))
+	-Wl,--no-fix-cortex-a8
+else
 	-Wl,--fix-cortex-a8
+endif
