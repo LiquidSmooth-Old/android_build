@@ -36,6 +36,7 @@ PRODUCT_PACKAGES := \
     KeyChain \
     MediaProvider \
     PackageInstaller \
+    PicoTTS \
     SettingsProvider \
     SharedStorageBackup \
     TelephonyProvider \
