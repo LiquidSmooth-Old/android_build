@@ -97,7 +97,7 @@ ifeq ($(TARGET_ARCH),arm)
       ccache := $(strip $(wildcard $(ccache)))
     endif
     ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ARM_EABI_TOOLCHAIN)/arm-eabi-"
-    ccache = 
+    ccache = 1
 endif
 
 ifeq ($(TARGET_KERNEL_MODULES),)
