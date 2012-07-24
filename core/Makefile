@@ -1578,3 +1578,4 @@ include $(sort $(wildcard $(BUILD_SYSTEM)/tasks/*.mk))
 ifneq ($(sdk_repo_goal),)
 include $(TOPDIR)development/build/tools/sdk_repo.mk
 endif
+endif
