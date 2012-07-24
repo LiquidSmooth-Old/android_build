@@ -28,7 +28,6 @@ PRODUCT_PACKAGES := \
     DrmProvider \
     Email \
     Exchange2 \
-    Gallery2 \
     InputDevices \
     LatinIME \
     Launcher2 \

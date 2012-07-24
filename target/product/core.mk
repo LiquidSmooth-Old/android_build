@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 PRODUCT_BRAND := generic
 PRODUCT_DEVICE := generic
 PRODUCT_NAME := core
@@ -31,12 +30,9 @@ PRODUCT_PACKAGES := \
     DefaultContainerService \
     DownloadProvider \
     DownloadProviderUi \
-    HTMLViewer \
-    Home \
     KeyChain \
     MediaProvider \
     PackageInstaller \
-    PicoTTS \
     SettingsProvider \
     SharedStorageBackup \
     TelephonyProvider \
