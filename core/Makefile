@@ -694,26 +694,7 @@ $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTFS) $(MKBOOTIMG) $(MINIGZIP) \
 	cp $(RECOVERY_INSTALL_OTA_KEYS) $(TARGET_RECOVERY_ROOT_OUT)/res/keys
 	cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
 	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
-	@echo Modifying default.prop
-	sed -i 's/ro.build.date.utc=.*/ro.build.date.utc=0/g' $(TARGET_RECOVERY_ROOT_OUT)/default.prop
-	@echo "----- Made recovery filesystem --------" $(TARGET_RECOVERY_ROOT_OUT)
-	@touch $(TARGET_RECOVERY_ROOT_TIMESTAMP)
-
-$(recovery_uncompressed_ramdisk): $(MINIGZIP) \
-    $(TARGET_RECOVERY_ROOT_TIMESTAMP)
-	@echo "----- Making uncompressed recovery ramdisk ------"
-	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) > $@
-
-$(recovery_ramdisk): $(MKBOOTFS) \
-    $(recovery_uncompressed_ramdisk)
-	@echo "----- Making recovery ramdisk ------"
-	$(MINIGZIP) < $(recovery_uncompressed_ramdisk) > $@
-
-ifndef BOARD_CUSTOM_BOOTIMG_MK
-$(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTIMG) \
-		$(recovery_ramdisk) \
-		$(recovery_kernel)
-	@echo "----- Making recovery image ------"
+	$(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) | $(MINIGZIP) > $(recovery_ramdisk)
 	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) --output $@
 	@echo -e ${CL_INS}"Made recovery image: $@"${CL_RST}
 	$(hide) $(call assert-max-image-size,$@,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE),raw)
