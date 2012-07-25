@@ -244,8 +244,8 @@ def BuildBootableImage(sourcedir, fs_config_file):
       cmd.append("--ramdiskaddr")
       cmd.append(open(fn).read().rstrip("\n"))
 
-    cmd.extend(["--ramdisk", ramdisk_img.name,
-                "--output", img.name])
+  cmd.extend(["--ramdisk", ramdisk_img.name,
+              "--output", img.name])
 
   p = Run(cmd, stdout=subprocess.PIPE)
   p.communicate()
