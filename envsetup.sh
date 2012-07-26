@@ -112,38 +112,25 @@ function setpaths()
     # and in with the new
     CODE_REVIEWS=
     prebuiltdir=$(getprebuilt)
+    prebuiltextradir=$(getprebuiltextra)
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
+    gccprebuiltextradir=$(get_abs_build_var ANDROID_GCC_PREBUILTS_EXTRA)
 
     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
-    local ARCH=$(get_build_var TARGET_ARCH)
-    case $ARCH in
-        x86) toolchaindir=x86/i686-android-linux-4.4.3/bin
-            ;;
-        arm) toolchaindir=arm/arm-linux-androideabi-4.6/bin
-            ;;
-        *)
-            echo "Can't find toolchain for unknown architecture: $ARCH"
-            toolchaindir=xxxxxxxxx
-            ;;
-    esac
-    if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
-        export ANDROID_EABI_TOOLCHAIN=$gccprebuiltdir/$toolchaindir
+    toolchaindir=toolchain/linaro-4.7.1/bin
+    if [ -d "$gccprebuiltextradir/$toolchaindir" ]; then
+        export ANDROID_EABI_TOOLCHAIN="$gccprebuiltextradir/$toolchaindir"
+    elif [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+        export ANDROID_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
     fi
 
     export ARM_EABI_TOOLCHAIN=
-    case $ARCH in
-        x86) toolchaindir=x86/i686-eabi-4.4.3/bin
-            ;;
-        arm) toolchaindir=arm/arm-eabi-4.6/bin
-            ;;
-        *)
-            echo "Can't find toolchain for unknown architecture: $ARCH"
-            toolchaindir=xxxxxxxxx
-            ;;
-    esac
-    if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
-        export ARM_EABI_TOOLCHAIN=$gccprebuiltdir/$toolchaindir
+    toolchaindir=toolchain/linaro-4.7.1/bin
+    if [ -e "$gccprebuiltextradir/$toolchaindir" ]; then
+        export ARM_EABI_TOOLCHAIN="$gccprebuiltextradir/$toolchaindir"
+    elif [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+        export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
     fi
 
     export ANDROID_TOOLCHAIN=$ANDROID_EABI_TOOLCHAIN
@@ -733,6 +720,7 @@ function gdbclient()
    local OUT_SYMBOLS=$(get_abs_build_var TARGET_OUT_UNSTRIPPED)
    local OUT_SO_SYMBOLS=$(get_abs_build_var TARGET_OUT_SHARED_LIBRARIES_UNSTRIPPED)
    local OUT_EXE_SYMBOLS=$(get_abs_build_var TARGET_OUT_EXECUTABLES_UNSTRIPPED)
+   local PREBUILTS_EXTRA=$(get_abs_build_var ANDROID_PREBUILTS_EXTRA)
    local PREBUILTS=$(get_abs_build_var ANDROID_PREBUILTS)
    local ARCH=$(get_build_var TARGET_ARCH)
    local GDB
@@ -852,6 +840,11 @@ function getprebuilt
     get_abs_build_var ANDROID_PREBUILTS
 }
 
+function getprebuiltextra
+{
+    get_abs_build_var ANDROID_PREBUILTS_EXTRA
+}
+
 function tracedmdump()
 {
     T=$(gettop)
@@ -860,6 +853,7 @@ function tracedmdump()
         return
     fi
     local prebuiltdir=$(getprebuilt)
+    local prebuiltextradir=$(getprebuiltextra)
     local KERNEL=$T/prebuilt/android-arm/kernel/vmlinux-qemu
 
     local TRACE=$1

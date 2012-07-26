@@ -239,6 +239,11 @@ def BuildBootableImage(sourcedir, fs_config_file):
     cmd.append("--pagesize")
     cmd.append(open(fn).read().rstrip("\n"))
 
+    fn = os.path.join(sourcedir, "ramdiskaddr")
+    if os.access(fn, os.F_OK):
+      cmd.append("--ramdiskaddr")
+      cmd.append(open(fn).read().rstrip("\n"))
+
   cmd.extend(["--ramdisk", ramdisk_img.name,
               "--output", img.name])
 
@@ -361,8 +366,14 @@ def SignFile(input_name, output_name, key, password, align=None,
   else:
     sign_name = output_name
 
-  cmd = ["java", "-Xmx2048m", "-jar",
+  check = (sys.maxsize > 2**32)
+  if check is True:
+    cmd = ["java", "-Xmx2048m", "-jar",
            os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
+  else:
+    cmd = ["java", "-Xmx1024m", "-jar",
+           os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
+
   if whole_file:
     cmd.append("-w")
   cmd.extend([key + ".x509.pem", key + ".pk8",
@@ -836,8 +847,14 @@ def ComputeDifferences(diffs):
 
 
 # map recovery.fstab's fs_types to mount/format "partition types"
-PARTITION_TYPES = { "yaffs2": "MTD", "mtd": "MTD",
-                    "ext4": "EMMC", "emmc": "EMMC" }
+PARTITION_TYPES = { "bml": "BML",
+                    "ext2": "EMMC",
+                    "ext3": "EMMC",
+                    "ext4": "EMMC",
+                    "emmc": "EMMC",
+                    "mtd": "MTD",
+                    "yaffs2": "MTD",
+                    "vfat": "EMMC" }
 
 def GetTypeAndDevice(mount_point, info):
   fstab = info["fstab"]
@@ -845,3 +862,4 @@ def GetTypeAndDevice(mount_point, info):
     return PARTITION_TYPES[fstab[mount_point].fs_type], fstab[mount_point].device
   else:
     return None
+

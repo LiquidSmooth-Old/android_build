@@ -23,6 +23,17 @@ endif
 
 ifeq "$(wildcard $(KERNEL_SRC) )" ""
     ifneq ($(TARGET_PREBUILT_KERNEL),)
+        HAS_PREBUILT_KERNEL := true
+        NEEDS_KERNEL_COPY := true
+    else
+        $(foreach cf,$(PRODUCT_COPY_FILES), \
+            $(eval _src := $(call word-colon,1,$(cf))) \
+            $(eval _dest := $(call word-colon,2,$(cf))) \
+            $(ifeq kernel,$(_dest), \
+                $(eval HAS_PREBUILT_KERNEL := true)))
+    endif
+
+    ifneq ($(HAS_PREBUILT_KERNEL),)
         $(warning ***************************************************************)
         $(warning * Using prebuilt kernel binary instead of source              *)
         $(warning * THIS IS DEPRECATED, AND WILL BE DISCONTINUED                *)
@@ -49,6 +60,7 @@ ifeq "$(wildcard $(KERNEL_SRC) )" ""
         $(error "NO KERNEL")
     endif
 else
+    NEEDS_KERNEL_COPY := true
     ifeq ($(TARGET_KERNEL_CONFIG),)
         $(warning **********************************************************)
         $(warning * Kernel source found, but no configuration was defined  *)
@@ -92,12 +104,26 @@ endef
 
 ifeq ($(TARGET_ARCH),arm)
     ifneq ($(USE_CCACHE),)
-      ccache := $(ANDROID_BUILD_TOP)/prebuilt/$(HOST_PREBUILT_TAG)/ccache/ccache
-      # Check that the executable is here.
-      ccache := $(strip $(wildcard $(ccache)))
+     # search executable
+      ccache =
+      ifneq ($(strip $(wildcard $(ANDROID_BUILD_TOP)/prebuilt/$(HOST_PREBUILT_EXTRA_TAG)/ccache/ccache)),)
+        ccache := $(ANDROID_BUILD_TOP)/prebuilt/$(HOST_PREBUILT_EXTRA_TAG)/ccache/ccache
+      else
+        ifneq ($(strip $(wildcard $(ANDROID_BUILD_TOP)/prebuilt/$(HOST_PREBUILT_TAG)/ccache/ccache)),)
+          ccache := $(ANDROID_BUILD_TOP)/prebuilt/$(HOST_PREBUILT_TAG)/ccache/ccache
+        endif
+      endif
     endif
-    ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ARM_EABI_TOOLCHAIN)/arm-eabi-"
-    ccache = 1
+    ifneq ($(TARGET_KERNEL_CUSTOM_TOOLCHAIN),)
+      ifeq ($(HOST_OS),darwin)
+        ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/darwin-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
+      else
+        ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/linux-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
+      endif
+    else
+      ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ARM_EABI_TOOLCHAIN)/arm-eabi-"
+    endif
+    ccache = 
 endif
 
 ifeq ($(TARGET_KERNEL_MODULES),)
@@ -134,10 +160,11 @@ endif # FULL_KERNEL_BUILD
 
 ## Install it
 
+ifeq ($(NEEDS_KERNEL_COPY),true)
 file := $(INSTALLED_KERNEL_TARGET)
 ALL_PREBUILT += $(file)
 $(file) : $(KERNEL_BIN) | $(ACP)
 	$(transform-prebuilt-to-target)
 
 ALL_PREBUILT += $(INSTALLED_KERNEL_TARGET)
-
+endif

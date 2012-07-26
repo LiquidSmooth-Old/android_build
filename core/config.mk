@@ -131,6 +131,9 @@ endif
 # are specific to the user's build configuration.
 include $(BUILD_SYSTEM)/envsetup.mk
 
+# Useful macros
+include $(BUILD_SYSTEM)/linaro_compilerchecks.mk
+
 # Boards may be defined under $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)
 # or under vendor/*/$(TARGET_DEVICE).  Search in both places, but
 # make sure only one exists.
@@ -326,7 +329,11 @@ endif
 ifeq ($(HOST_OS),darwin)
 dir := $(HOST_OS)-$(HOST_ARCH)
 endif
+ifneq ($(strip $(wildcard prebuilt/$(HOST_PREBUILT_EXTRA_TAG)/flex/flex-2.5.4a$(HOST_EXECUTABLE_SUFFIX))),)
+OLD_FLEX := prebuilt/$(HOST_PREBUILT_EXTRA_TAG)/flex/flex-2.5.4a$(HOST_EXECUTABLE_SUFFIX)
+else
 OLD_FLEX := prebuilt/$(HOST_PREBUILT_TAG)/flex/flex-2.5.4a$(HOST_EXECUTABLE_SUFFIX)
+endif
 
 ifeq ($(HOST_OS),darwin)
 # Mac OS' screwy version of java uses a non-standard directory layout
