@@ -126,7 +126,17 @@ function setpaths()
 
     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
-    toolchaindir=toolchain/linaro-4.7.1/bin
+    local ARCH=$(get_build_var TARGET_ARCH)
+    case $ARCH in
+        x86) toolchaindir=x86/i686-android-linux-4.4.3/bin
+            ;;
+        arm) toolchaindir=arm/arm-linux-androideabi-4.6/bin
+            ;;
+        *)
+            echo "Can't find toolchain for unknown architecture: $ARCH"
+            toolchaindir=xxxxxxxxx
+            ;;
+    esac
     if [ -d "$gccprebuiltextradir/$toolchaindir" ]; then
         export ANDROID_EABI_TOOLCHAIN="$gccprebuiltextradir/$toolchaindir"
     elif [ -d "$gccprebuiltdir/$toolchaindir" ]; then
@@ -134,7 +144,16 @@ function setpaths()
     fi
 
     export ARM_EABI_TOOLCHAIN=
-    toolchaindir=toolchain/linaro-4.7.1/bin
+    case $ARCH in
+        x86) toolchaindir=x86/i686-eabi-4.4.3/bin
+            ;;
+        arm) toolchaindir=arm/arm-eabi-4.6/bin
+            ;;
+        *)
+            echo "Can't find toolchain for unknown architecture: $ARCH"
+            toolchaindir=xxxxxxxxx
+            ;;
+    esac
     if [ -e "$gccprebuiltextradir/$toolchaindir" ]; then
         export ARM_EABI_TOOLCHAIN="$gccprebuiltextradir/$toolchaindir"
     elif [ -d "$gccprebuiltdir/$toolchaindir" ]; then
