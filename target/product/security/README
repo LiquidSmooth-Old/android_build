@@ -1,11 +1,3 @@
------------------------------------------------------------------------------------------------
-============================================ NOTE =============================================
-Team Liquid uses custom keys to avoid attempts to track user root status by checking build keys
-    The keys were generated the same way however they ARE different from the standard testkeys
-    and are now closer to an OEM style signature... although this is a bandaid we should really
-    just make our own build/vendor/liquid but for now it just gets a TODO note :(
------------------------------------------------------------------------------------------------
-
 The following commands were used to generate the test key pairs:
 
   development/tools/make_key testkey  '/C=US/ST=California/L=Mountain View/O=Android/OU=Android/CN=Android/emailAddress=android@android.com'
