@@ -130,7 +130,7 @@ function setpaths()
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
     gccprebuiltextradir=$(get_abs_build_var ANDROID_GCC_PREBUILTS_EXTRA)
 
-    # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
+     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
     local ARCH=$(get_build_var TARGET_ARCH)
     case $ARCH in
