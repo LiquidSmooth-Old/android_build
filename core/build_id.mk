@@ -1,3 +1,4 @@
+
 #
 # Copyright (C) 2008 The Android Open Source Project
 #
@@ -17,4 +18,5 @@
 # (like "MAIN") or a branch name and a release candidate
 # (like "CRB01").  It must be a single word, and is
 # capitalized by convention.
-export BUILD_ID=JRO03L
+
+export BUILD_ID=JRO03R
