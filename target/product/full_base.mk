@@ -22,7 +22,8 @@ PRODUCT_PACKAGES := \
     drmserver \
     libdrmframework \
     libdrmframework_jni \
-    libfwdlockengine
+    libfwdlockengine \
+    WAPPushManager
 
 # Put en_US first in the list, so make it default.
 PRODUCT_LOCALES := en_US

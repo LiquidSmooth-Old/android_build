@@ -56,10 +56,16 @@ function check_product()
 
     if (echo -n $1 | grep -q -e "^liquid_") ; then
        LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
-    else
+       NAM_VARIANT=$(echo -n $1 | sed -e 's/^liquid_//g')
+    elif (echo -n $1 | grep -q -e "htc_") ; then
        LIQUID_BUILD=
+       NAM_VARIANT=$(echo -n $1)
+    else 
+       LIQUID_BUILD=
+       NAM_VARIANT=
     fi
     export LIQUID_BUILD
+    export NAM_VARIANT
 
     CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
         TARGET_PRODUCT=$1 \
