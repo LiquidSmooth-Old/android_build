@@ -1367,7 +1367,7 @@ function reposync() {
             repo sync -j 8 "$@"
             ;;
         *)
-            schedtool -B -n 1 -e ionice -n 1 repo sync -j 8 "$@"
+            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -j 8 "$@"
             ;;
     esac
 }
