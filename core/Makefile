@@ -1412,10 +1412,10 @@ otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
 liquid: otapackage
 ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
 	@echo "Running custom releasetool..."
-	$(hide) $(TARGET_CUSTOM_RELEASETOOL)
+	$(hide) OTAPACKAGE=$(PWD)/$(INTERNAL_OTA_PACKAGE_TARGET) $(TARGET_CUSTOM_RELEASETOOL)
 else
 	@echo "Running squisher releasetool..."
-	$(hide) ./vendor/liquid/tools/squisher
+	$(hide) OTAPACKAGE=$(PWD)/$(INTERNAL_OTA_PACKAGE_TARGET) ./vendor/liquid/tools/squisher
 endif
 
 # -----------------------------------------------------------------
