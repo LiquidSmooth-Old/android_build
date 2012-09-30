@@ -53,3 +53,4 @@ endif
 ifeq ($(strip $(TARGET_ARCH_VARIANT_CPU)),cortex-a8)
 arch_variant_ldflags := \
 	-Wl,--fix-cortex-a8
+endif
