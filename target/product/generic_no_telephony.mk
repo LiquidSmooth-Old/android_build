@@ -34,6 +34,7 @@ PRODUCT_PACKAGES := \
     Launcher2 \
     Music \
     Phone \
+    Provision \
     Settings \
     SystemUI \
     CalendarProvider \
