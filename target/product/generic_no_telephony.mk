@@ -32,6 +32,7 @@ PRODUCT_PACKAGES := \
     InputDevices \
     LatinIME \
     Launcher2 \
+    Music \
     Phone \
     Provision \
     Settings \
