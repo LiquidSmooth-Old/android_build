@@ -22,6 +22,23 @@ ifeq (,$(filter true, $(WITHOUT_CHECK_API) $(TARGET_BUILD_PDK)))
 
 .PHONY: checkapi
 
+# eval this to define a rule that runs apicheck.
+#
+# Args:
+#    $(1)  target
+#    $(2)  stable api file
+#    $(3)  api file to be tested
+#    $(4)  arguments for apicheck
+#    $(5)  command to run if apicheck failed
+define check-api
+$(TARGET_OUT_COMMON_INTERMEDIATES)/PACKAGING/$(strip $(1))-timestamp: $(2) $(3) $(APICHECK)
+	@echo -e ${CL_YLW}"Checking API:"${CL_RST} $(1)
+	$(hide) ( $(APICHECK_COMMAND) $(4) $(2) $(3) || ( $(5) ; exit 38 ) )
+	$(hide) mkdir -p $$(dir $$@)
+	$(hide) touch $$@
+checkapi: $(TARGET_OUT_COMMON_INTERMEDIATES)/PACKAGING/$(strip $(1))-timestamp
+endef
+
 # Run the checkapi rules by default.
 droidcore: checkapi
 
@@ -67,7 +84,7 @@ $(eval $(call check-api, \
 
 .PHONY: update-api
 update-api: $(INTERNAL_PLATFORM_API_FILE) | $(ACP)
-	@echo Copying current.txt
-	$(hide) $(ACP) $(INTERNAL_PLATFORM_API_FILE) frameworks/base/api/current.txt
+	@echo -e ${CL_GRN}"Copying current.txt"${CL_RST}
+	$(hide) $(ACP) $(INTERNAL_PLATFORM_API_FILE) $(SRC_API_DIR)/current.txt
 
 endif
