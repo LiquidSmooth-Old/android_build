@@ -20,5 +20,4 @@
 # the system misbehaves when a density is the first locale.
 
 # This is the list of languages that originally shipped on ADP1
-
-PRODUCT_LOCALES := en_US en_GB fr_FR it_IT de_DE es_ES
+PRODUCT_LOCALES := en_US
