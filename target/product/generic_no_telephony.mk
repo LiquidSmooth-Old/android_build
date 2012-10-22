@@ -23,6 +23,7 @@ PRODUCT_PACKAGES := \
     DeskClock \
     Bluetooth \
     Calculator \
+    Calendar \
     CertInstaller \
     DrmProvider \
     Email \
