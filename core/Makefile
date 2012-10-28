@@ -1308,7 +1308,8 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS) $(SEL
 	$(OTA_FROM_TARGET_SCRIPT) -v \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
-	   $(BUILT_TARGET_FILES_PACKAGE) $@
+	   --override_device=$(override_device) \
+       $(BUILT_TARGET_FILES_PACKAGE) $@
 
 .PHONY: otapackage liquid
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
