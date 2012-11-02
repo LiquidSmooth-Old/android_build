@@ -158,7 +158,6 @@ endif
 
 ifeq (,$(strip $(OUT_DIR)))
 ifeq (,$(strip $(OUT_DIR_COMMON_BASE)))
-ifneq ($(TOPDIR),)
 OUT_DIR := $(TOPDIR)out
 else
 OUT_DIR := $(shell python -c 'import os,sys; print os.path.realpath(sys.argv[1])' .)/out
