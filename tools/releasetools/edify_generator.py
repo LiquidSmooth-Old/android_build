@@ -143,6 +143,12 @@ class EdifyGenerator(object):
                           p.device, p.mount_point))
       self.mounts.add(p.mount_point)
 
+  def Unmount(self, mount_point):
+    """Unmount the partiiton with the given mount_point."""
+    if mount_point in self.mounts:
+      self.mounts.remove(mount_point)
+      self.script.append('unmount("%s");' % (mount_point,))
+
   def UnpackPackageDir(self, src, dst):
     """Unpack a given directory from the OTA package into the given
     destination directory."""
@@ -202,7 +208,8 @@ class EdifyGenerator(object):
       args = {'device': p.device, 'fn': fn}
       if partition_type == "MTD":
         self.script.append(
-            'write_raw_image(package_extract_file("%(fn)s"), "%(device)s");'
+            'package_extract_file("%(fn)s", "/tmp/boot.img");'
+            'write_raw_image("/tmp/boot.img", "%(device)s");' % args
             % args)
       elif partition_type == "EMMC":
         self.script.append(
