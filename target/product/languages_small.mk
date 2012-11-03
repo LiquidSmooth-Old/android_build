@@ -20,5 +20,5 @@
 # the system misbehaves when a density is the first locale.
 
 # This is the list of languages that originally shipped on ADP1
-
+# by TextView in this branch.
 PRODUCT_LOCALES := en_US

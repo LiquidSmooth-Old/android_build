@@ -14,7 +14,6 @@
 
 # Common configurations for mini_XXX lunch targets
 # This is mainly for creating small system image during early development stage.
-
 PRODUCT_BRAND := mini
 PRODUCT_DEVICE := mini
 PRODUCT_NAME := mini
@@ -29,7 +28,6 @@ PRODUCT_LOCALES := en_US
 # dummy definitions to use += in later parts
 PRODUCT_PROPERTY_OVERRIDES :=
 PRODUCT_COPY_FILES :=
-
 
 # for CtsVerifier
 PRODUCT_PACKAGES += \
@@ -46,10 +44,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml
 
 #----------------- originally from core.mk ----------------
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.config.notification_sound=OnTheHunt.ogg \
-    ro.config.alarm_alert=Alarm_Classic.ogg
 
 PRODUCT_PACKAGES += \
     ApplicationsProvider \
@@ -156,7 +150,6 @@ PRODUCT_PACKAGES += \
     hostapd \
     wpa_supplicant.conf
 
-
 PRODUCT_PACKAGES += \
     icu.dat
 
@@ -185,22 +178,12 @@ PRODUCT_COPY_FILES += \
     system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
     frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.carrier=unknown
-
 #----------------- originally from full_base.mk ----------------
 
 PRODUCT_PACKAGES += \
     drmserver \
     libdrmframework \
     libdrmframework_jni
-
-
-# Additional settings used in all AOSP builds
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.com.android.dateformat=MM-dd-yyyy \
-    ro.config.ringtone=Ring_Synth_04.ogg \
-    ro.config.notification_sound=pixiedust.ogg
 
 $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
 $(call inherit-product-if-exists, frameworks/base/data/fonts/fonts.mk)
