@@ -33,8 +33,6 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Launcher2 \
     Music \
-    Provision \
-    QuickSearchBox \
     Settings \
     Sync \
     Updater \
@@ -43,7 +41,6 @@ PRODUCT_PACKAGES := \
     bluetooth-health \
     hostapd \
     wpa_supplicant.conf
-
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core.mk)
 

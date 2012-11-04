@@ -222,41 +222,30 @@ def BuildBootableImage(sourcedir, fs_config_file):
   assert p1.returncode == 0, "mkbootfs of %s ramdisk failed" % (targetname,)
   assert p2.returncode == 0, "minigzip of %s ramdisk failed" % (targetname,)
 
-  """check if uboot is requested"""
-  fn = os.path.join(sourcedir, "ubootargs")
+  cmd = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
+
+  fn = os.path.join(sourcedir, "cmdline")
   if os.access(fn, os.F_OK):
-    cmd = ["mkimage"]
-    for argument in open(fn).read().rstrip("\n").split(" "):
-      cmd.append(argument)
-    cmd.append("-d")
-    cmd.append(os.path.join(sourcedir, "kernel")+":"+ramdisk_img.name)
-    cmd.append(img.name)
+    cmd.append("--cmdline")
+    cmd.append(open(fn).read().rstrip("\n"))
 
-  else:
-    cmd = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
+  fn = os.path.join(sourcedir, "base")
+  if os.access(fn, os.F_OK):
+    cmd.append("--base")
+    cmd.append(open(fn).read().rstrip("\n"))
 
-    fn = os.path.join(sourcedir, "cmdline")
-    if os.access(fn, os.F_OK):
-      cmd.append("--cmdline")
-      cmd.append(open(fn).read().rstrip("\n"))
-
-    fn = os.path.join(sourcedir, "base")
-    if os.access(fn, os.F_OK):
-      cmd.append("--base")
-      cmd.append(open(fn).read().rstrip("\n"))
-
-    fn = os.path.join(sourcedir, "pagesize")
-    if os.access(fn, os.F_OK):
-      cmd.append("--pagesize")
-      cmd.append(open(fn).read().rstrip("\n"))
+  fn = os.path.join(sourcedir, "pagesize")
+  if os.access(fn, os.F_OK):
+    cmd.append("--pagesize")
+    cmd.append(open(fn).read().rstrip("\n"))
 
     fn = os.path.join(sourcedir, "ramdiskaddr")
     if os.access(fn, os.F_OK):
       cmd.append("--ramdiskaddr")
       cmd.append(open(fn).read().rstrip("\n"))
 
-    cmd.extend(["--ramdisk", ramdisk_img.name,
-                "--output", img.name])
+  cmd.extend(["--ramdisk", ramdisk_img.name,
+              "--output", img.name])
 
   p = Run(cmd, stdout=subprocess.PIPE)
   p.communicate()
@@ -367,7 +356,6 @@ def SignFile(input_name, output_name, key, password, align=None,
   signature that covers the whole file in the archive comment of the
   zip file.
   """
-
 
   if align == 0 or align == 1:
     align = None

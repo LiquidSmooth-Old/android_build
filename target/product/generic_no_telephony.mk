@@ -33,8 +33,8 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Launcher2 \
     Music \
-    Provision \
     Phone \
+    Provision \
     Settings \
     SystemUI \
     CalendarProvider \

@@ -1079,7 +1079,6 @@ endif
 DISTTOOLS :=  $(HOST_OUT_EXECUTABLES)/minigzip \
 	  $(HOST_OUT_EXECUTABLES)/mkbootfs \
 	  $(HOST_OUT_EXECUTABLES)/mkbootimg \
-	  $(HOST_OUT_EXECUTABLES)/unpackbootimg \
 	  $(HOST_OUT_EXECUTABLES)/fs_config \
 	  $(HOST_OUT_EXECUTABLES)/mkyaffs2image \
 	  $(HOST_OUT_EXECUTABLES)/zipalign \
@@ -1271,7 +1270,12 @@ ifeq ($(TARGET_BUILD_TYPE),debug)
 endif
 name := $(name)-ota-$(FILE_NAME_TAG)
 
+ifeq ($(OUT_DIR),out)
+INTERNAL_OTA_PACKAGE_TARGET := $(ANDROID_BUILD_TOP)/$(PRODUCT_OUT)/$(name).zip
+APKCERTS_FILE := $(ANDROID_BUILD_TOP)/$(APKCERTS_FILE)
+else
 INTERNAL_OTA_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
+endif
 
 $(INTERNAL_OTA_PACKAGE_TARGET): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
 
@@ -1305,7 +1309,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS) $(SEL
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
 	   --override_device=$(override_device) \
-	   $(BUILT_TARGET_FILES_PACKAGE) $@
+       $(BUILT_TARGET_FILES_PACKAGE) $@
 
 .PHONY: otapackage liquid
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)

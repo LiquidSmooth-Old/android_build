@@ -53,6 +53,20 @@ function check_product()
         echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
         return
     fi
+
+    if (echo -n $1 | grep -q -e "^liquid_") ; then
+       LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
+       NAM_VARIANT=$(echo -n $1 | sed -e 's/^liquid_//g')
+    elif (echo -n $1 | grep -q -e "htc_") ; then
+       LIQUID_BUILD=
+       NAM_VARIANT=$(echo -n $1)
+    else 
+       LIQUID_BUILD=
+       NAM_VARIANT=
+    fi
+    export LIQUID_BUILD
+    export NAM_VARIANT
+
     CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -116,7 +130,7 @@ function setpaths()
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
     gccprebuiltextradir=$(get_abs_build_var ANDROID_GCC_PREBUILTS_EXTRA)
 
-    # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
+     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
     local ARCH=$(get_build_var TARGET_ARCH)
     case $ARCH in
@@ -420,6 +434,9 @@ function add_lunch_combo()
 }
 
 # add the default one here
+#add_lunch_combo full-eng
+#add_lunch_combo full_x86-eng
+#add_lunch_combo vbox_x86-eng
 
 function print_lunch_menu()
 {
@@ -1112,7 +1129,6 @@ fi
 
 # Execute the contents of any vendorsetup.sh files we can find.
 for f in `/bin/ls vendor/*/vendorsetup.sh vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh 2> /dev/null`
-
 do
     echo "including $f"
     . $f
