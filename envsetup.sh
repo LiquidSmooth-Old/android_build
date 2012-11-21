@@ -11,10 +11,6 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
-- mka:      Builds using SCHED_BATCH on all processors
-- mbot:     Builds for all devices using the psuedo buildbot
-- mkapush:  Same as mka with the addition of adb pushing to the device.
-- reposync: Parallel repo sync using ionice and SCHED_BATCH
 
 Look at the source to view more functions. The complete list is:
 EOF
@@ -61,17 +57,11 @@ function check_product()
     fi
 
     if (echo -n $1 | grep -q -e "^liquid_") ; then
-       LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
-       NAM_VARIANT=$(echo -n $1 | sed -e 's/^liquid_//g')
-    elif (echo -n $1 | grep -q -e "htc_") ; then
-       LIQUID_BUILD=
-       NAM_VARIANT=$(echo -n $1)
-    else 
-       LIQUID_BUILD=
-       NAM_VARIANT=
+        LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
+    else
+        LIQUID_BUILD=
     fi
     export LIQUID_BUILD
-    export NAM_VARIANT
 
     CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
         TARGET_PRODUCT=$1 \
@@ -161,7 +151,10 @@ function setpaths()
     case $ARCH in
         arm)
             toolchaindir=arm/arm-eabi-4.6/bin
-            if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
+            if [ -e "$gccprebuiltextradir/$toolchaindir" ]; then
+                export ARM_EABI_TOOLCHAIN="$gccprebuiltextradir/$toolchaindir"
+                ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltextradir/$toolchaindir"
+            elif [ -d "$gccprebuiltdir/$toolchaindir" ]; then
                  export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
                  ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"
             fi
@@ -453,11 +446,7 @@ function print_lunch_menu()
     echo
     echo "You're building on" $uname
     echo
-    if [ "z${liquid_DEVICES_ONLY}" != "z" ]; then
-       echo "Breakfast menu... pick a combo:"
-    else
-       echo "Lunch menu... pick a combo:"
-    fi
+    echo "Lunch menu... pick a combo:"
 
     local i=1
     local choice
@@ -467,56 +456,8 @@ function print_lunch_menu()
         i=$(($i+1))
     done
 
-    if [ "z${liquid_DEVICES_ONLY}" != "z" ]; then
-       echo "... and don't forget the bacon!"
-    fi
-
     echo
 }
-
-function brunch()
-{
-    breakfast $*
-    if [ $? -eq 0 ]; then
-        export FAST_BUILD=1
-        mka liquid
-    else
-        echo "No such item in brunch menu. Try 'breakfast'"
-        return 1
-    fi
-    return $?
-}
-
-function breakfast()
-{
-    target=$1
-    liquid_DEVICES_ONLY="true"
-    unset LUNCH_MENU_CHOICES
-    add_lunch_combo full-eng
-    for f in `/bin/ls vendor/liquid/vendorsetup.sh 2> /dev/null`
-        do
-            echo "including $f"
-            . $f
-        done
-    unset f
-
-    if [ $# -eq 0 ]; then
-        # No arguments, so let's have the full menu
-        lunch
-    else
-        echo "z$target" | grep -q "-"
-        if [ $? -eq 0 ]; then
-            # A buildtype was specified, assume a full device name
-            lunch $target
-        else
-            # This is probably just the liquid model name
-            lunch liquid_$target-userdebug
-        fi
-    fi
-    return $?
-}
-
-alias bib=breakfast
 
 function lunch()
 {
@@ -640,43 +581,6 @@ function tapas()
 
     set_stuff_for_environment
     printconfig
-}
-
-function eat()
-{
-    if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.cm\.version/s/.*=//p' $OUT/system/build.prop`
-        ZIPFILE=update-cm-$MODVERSION-signed.zip
-        ZIPPATH=$OUT/$ZIPFILE
-        if [ ! -f $ZIPPATH ] ; then
-            echo "Nothing to eat"
-            return 1
-        fi
-        adb start-server # Prevent unexpected starting server message from adb get-state in the next line
-        if [ $(adb get-state) != device -a $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) != 0 ] ; then
-            echo "No device is online. Waiting for one..."
-            echo "Please connect USB and/or enable USB debugging"
-            until [ $(adb get-state) = device -o $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) = 0 ];do
-                sleep 1
-            done
-            echo "Device Found.."
-        fi
-        echo "Pushing $ZIPFILE to device"
-        if adb push $ZIPPATH /storage/sdcard0/ ; then
-            cat << EOF > /tmp/command
---update_package=/sdcard/$ZIPFILE
-EOF
-            if adb push /tmp/command /cache/recovery/ ; then
-                echo "Rebooting into recovery for installation"
-                adb reboot recovery
-            fi
-            rm /tmp/command
-        fi
-    else
-        echo "Nothing to eat"
-        return 1
-    fi
-    return $?
 }
 
 function gettop
@@ -1002,6 +906,7 @@ function tracedmdump()
     fi
     local prebuiltdir=$(getprebuilt)
     local arch=$(gettargetarch)
+    local prebuiltextradir=$(getprebuiltextra)
     local KERNEL=$T/prebuilts/qemu-kernel/$arch/vmlinux-qemu
 
     local TRACE=$1
@@ -1180,7 +1085,7 @@ function smoketest()
         return
     fi
 
-    (cd "$T" && make SmokeTest SmokeTestApp) &&
+    (cd "$T" && mmm tests/SmokeTest) &&
       adb uninstall com.android.smoketest > /dev/null &&
       adb uninstall com.android.smoketest.tests > /dev/null &&
       adb install $ANDROID_PRODUCT_OUT/data/app/SmokeTestApp.apk &&
@@ -1241,86 +1146,6 @@ function godir () {
         pathname=${lines[0]}
     fi
     cd $T/$pathname
-}
-
-function mka() {
-    case `uname -s` in
-        Darwin)
-            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
-            ;;
-        *)
-            schedtool -B -n 1 -e ionice -n 1 make -j `cat /proc/cpuinfo | grep "^processor" | wc -l` "$@"
-            ;;
-    esac
-}
-
-function mbot() {
-    unset LUNCH_MENU_CHOICES
-    croot
-    ./vendor/liquid/bot/deploy.sh
-}
-
-function mkapush() {
-    # There's got to be a better way to do this stupid shit.
-    case `uname -s` in
-        Darwin)
-            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
-                make -j `sysctl hw.ncpu|cut -d" " -f2` installed-file-list
-            fi
-            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
-            ;;
-        *)
-            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
-                schedtool -B -n 1 -e ionice -n 1 make -j `cat /proc/cpuinfo | grep "^processor" | wc -l` installed-file-list
-            fi
-            schedtool -B -n 1 -e ionice -n 1 make -j `cat /proc/cpuinfo | grep "^processor" | wc -l` "$@"
-            ;;
-    esac
-    case $@ in
-        *\ * )
-            echo $@ | awk 'gsub(/ /,"\n") {print}' | while read line; do
-                blackmagic=`sed -n "/$line/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
-                if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
-                elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
-                    adb_stop=true
-                fi
-                adb remount
-                if [ $adb_stop = true ]; then
-                    adb shell stop
-                fi
-                adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
-                if [ $adb_stop = true ]; then
-                    adb shell start
-                fi
-            done
-            ;;
-        *)
-            blackmagic=`sed -n "/$@/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
-            if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
-            elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
-                adb_stop=true
-            fi
-            adb remount
-            if [ $adb_stop = true ]; then
-                adb shell stop
-            fi
-            adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
-            if [ $adb_stop = true ]; then
-                adb shell start
-            fi
-            ;;
-    esac
-}
-
-function reposync() {
-    case `uname -s` in
-        Darwin)
-            repo sync -j 4 "$@"
-            ;;
-        *)
-            schedtool -B -n 1 -e ionice -n 1 repo sync -j 4 "$@"
-            ;;
-    esac
 }
 
 # Force JAVA_HOME to point to java 1.6 if it isn't already set

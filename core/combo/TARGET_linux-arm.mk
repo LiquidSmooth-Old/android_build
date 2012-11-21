@@ -43,11 +43,7 @@ include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-ifneq ($(strip $(wildcard prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/arm/arm-linux-androideabi-4.6)),)
-TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/arm/arm-linux-androideabi-4.6
-else
 TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6
-endif
 TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/arm-linux-androideabi-
 endif
 
@@ -108,7 +104,7 @@ ifeq ($(TARGET_DISABLE_ARM_PIE),true)
 else
    PIE_GLOBAL_CFLAGS := -fPIE
    PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
-endif
+endif   
 
 TARGET_GLOBAL_CFLAGS += \
 			-msoft-float -fpic $(PIE_GLOBAL_CFLAGS) \

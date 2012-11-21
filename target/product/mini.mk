@@ -14,6 +14,7 @@
 
 # Common configurations for mini_XXX lunch targets
 # This is mainly for creating small system image during early development stage.
+
 PRODUCT_BRAND := mini
 PRODUCT_DEVICE := mini
 PRODUCT_NAME := mini
@@ -28,6 +29,7 @@ PRODUCT_LOCALES := en_US
 # dummy definitions to use += in later parts
 PRODUCT_PROPERTY_OVERRIDES :=
 PRODUCT_COPY_FILES :=
+
 
 # for CtsVerifier
 PRODUCT_PACKAGES += \
@@ -165,6 +167,7 @@ PRODUCT_PACKAGES += \
     hostapd \
     wpa_supplicant.conf
 
+
 PRODUCT_PACKAGES += \
     icu.dat
 
@@ -188,6 +191,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
 
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.carrier=unknown
+
 #----------------- originally from full_base.mk ----------------
 
 PRODUCT_PACKAGES += \
@@ -195,6 +201,7 @@ PRODUCT_PACKAGES += \
     libdrmframework \
     libdrmframework_jni \
     WAPPushManager
+
 
 # Additional settings used in all AOSP builds
 PRODUCT_PROPERTY_OVERRIDES += \

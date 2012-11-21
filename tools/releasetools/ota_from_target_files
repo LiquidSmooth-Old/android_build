@@ -105,7 +105,7 @@ def MostPopularKey(d, default):
 def IsSymlink(info):
   """Return true if the zipfile.ZipInfo object passed in represents a
   symlink."""
-  return (info.external_attr >> 16) & 0770000 == 0120000
+  return (info.external_attr >> 16) & 0770000 == 0120777
 
 def IsRegular(info):
   """Return true if the zipfile.ZipInfo object passed in represents a
@@ -309,7 +309,7 @@ def SignOutput(temp_zip_name, output_zip_name):
 
 def AppendAssertions(script, info_dict):
   if OPTIONS.override_device == "auto":
-    device = GetBuildProp("ro.product.device", info_dict)
+    device = GetBuildProp("ro.product.device", input_zip)
   else:
     device = OPTIONS.override_device
   script.AssertDevice(device)
@@ -390,9 +390,9 @@ def WriteFullOTAPackage(input_zip, output_zip):
       metadata=metadata,
       info_dict=OPTIONS.info_dict)
 
-  #if not OPTIONS.omit_prereq:
-  #  ts = GetBuildProp("ro.build.date.utc", OPTIONS.info_dict)
-  #  script.AssertOlderBuild(ts)
+  #  if not OPTIONS.omit_prereq:
+  #    ts = GetBuildProp("ro.build.date.utc", OPTIONS.info_dict)
+  #    script.AssertOlderBuild(ts)
 
   AppendAssertions(script, OPTIONS.info_dict)
   device_specific.FullOTA_Assertions()
@@ -435,13 +435,10 @@ def WriteFullOTAPackage(input_zip, output_zip):
 
   boot_img = common.GetBootableImage("boot.img", "boot.img",
                                      OPTIONS.input_tmp, "BOOT")
-  recovery_img = common.GetBootableImage("recovery.img", "recovery.img",
-                                         OPTIONS.input_tmp, "RECOVERY")
-  MakeRecoveryPatch(OPTIONS.input_tmp, output_zip, recovery_img, boot_img)
 
   Item.GetMetadata(input_zip)
   Item.Get("system").SetPermissions(script)
-  script.SetPermissionsRecursive("/system/etc/init.d", 0, 0, 0755, 0555)  
+  script.SetPermissionsRecursive("/system/etc/init.d", 0, 0, 0755, 0555)
 
   common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
@@ -575,12 +572,12 @@ def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
       "/tmp/boot.img", "boot.img", OPTIONS.target_tmp, "BOOT")
   updating_boot = (source_boot.data != target_boot.data)
 
-  #source_recovery = common.GetBootableImage(
-  #    "/tmp/recovery.img", "recovery.img", OPTIONS.source_tmp, "RECOVERY",
-  #    OPTIONS.source_info_dict)
-  #target_recovery = common.GetBootableImage(
-  #    "/tmp/recovery.img", "recovery.img", OPTIONS.target_tmp, "RECOVERY")
-  #updating_recovery = (source_recovery.data != target_recovery.data)
+  #  source_recovery = common.GetBootableImage(
+  #      "/tmp/recovery.img", "recovery.img", OPTIONS.source_tmp, "RECOVERY",
+  #      OPTIONS.source_info_dict)
+  #  target_recovery = common.GetBootableImage(
+  #      "/tmp/recovery.img", "recovery.img", OPTIONS.target_tmp, "RECOVERY")
+  #  updating_recovery = (source_recovery.data != target_recovery.data)
   updating_recovery = false
 
   # Here's how we divide up the progress bar:
@@ -723,9 +720,9 @@ def WriteIncrementalOTAPackage(target_zip, source_zip, output_zip):
     script.Print("Unpacking new files...")
     script.UnpackPackageDir("system", "/system")
 
-  #if updating_recovery:
-  #  script.Print("Unpacking new recovery...")
-  #  script.UnpackPackageDir("recovery", "/system")
+  #  if updating_recovery:
+  #    script.Print("Unpacking new recovery...")
+  #    script.UnpackPackageDir("recovery", "/system")
 
   script.Print("Symlinks and permissions...")
 

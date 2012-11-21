@@ -13,20 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 # This is a build configuration for a full-featured build of the
 # Open-Source part of the tree. It's geared toward a US-centric
 # build of the emulator, but all those aspects can be overridden
 # in inherited configurations.
 
 PRODUCT_PACKAGES := \
-    libfwdlockengine \
-    WAPPushManager
+    libfwdlockengine
 
 # Put en_US first in the list, so make it default.
 PRODUCT_LOCALES := en_US
-
-# Get a list of languages.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_small.mk)
 
 # Get everything else from the parent package
 $(call inherit-product, $(SRC_TARGET_DIR)/product/generic_no_telephony.mk)
