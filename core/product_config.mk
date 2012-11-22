@@ -88,7 +88,7 @@ INTERNAL_VALID_VARIANTS := user userdebug eng tests
 # Provide "PRODUCT-<prodname>-<goal>" targets, which lets you build
 # a particular configuration without needing to set up the environment.
 #
-product_goals := $(strip $(filter PRODUCT-%,$(MAKECMDGOALS)))
+product_goals := $(strip $(filter PRODUCT-%,$(MAKELIQUIDDGOALS)))
 ifdef product_goals
   # Scrape the product and build names out of the goal,
   # which should be of the form PRODUCT-<productname>-<buildname>.
@@ -112,7 +112,7 @@ ifdef product_goals
   # The build server wants to do make PRODUCT-dream-installclean
   # which really means TARGET_PRODUCT=dream make installclean.
   ifneq ($(filter-out $(INTERNAL_VALID_VARIANTS),$(TARGET_BUILD_VARIANT)),)
-    MAKECMDGOALS := $(MAKECMDGOALS) $(TARGET_BUILD_VARIANT)
+    MAKELIQUIDDGOALS := $(MAKELIQUIDDGOALS) $(TARGET_BUILD_VARIANT)
     TARGET_BUILD_VARIANT := eng
     default_goal_substitution :=
   else
@@ -132,14 +132,14 @@ ifdef product_goals
   # attempt to build, but it's important because we inspect this value
   # in certain situations (like for "make sdk").
   #
-  MAKECMDGOALS := $(patsubst $(goal_name),$(default_goal_substitution),$(MAKECMDGOALS))
+  MAKELIQUIDDGOALS := $(patsubst $(goal_name),$(default_goal_substitution),$(MAKELIQUIDDGOALS))
 
   # Define a rule for the PRODUCT-* goal, and make it depend on the
   # patched-up command-line goals as well as any other goals that we
   # want to force.
   #
 .PHONY: $(goal_name)
-$(goal_name): $(MAKECMDGOALS)
+$(goal_name): $(MAKELIQUIDDGOALS)
 endif
 # else: Use the value set in the environment or buildspec.mk.
 
@@ -147,20 +147,20 @@ endif
 # Provide "APP-<appname>" targets, which lets you build
 # an unbundled app.
 #
-unbundled_goals := $(strip $(filter APP-%,$(MAKECMDGOALS)))
+unbundled_goals := $(strip $(filter APP-%,$(MAKELIQUIDDGOALS)))
 ifdef unbundled_goals
   ifneq ($(words $(unbundled_goals)),1)
     $(error Only one APP-* goal may be specified; saw "$(unbundled_goals)"))
   endif
   TARGET_BUILD_APPS := $(strip $(subst -, ,$(patsubst APP-%,%,$(unbundled_goals))))
-  ifneq ($(filter $(DEFAULT_GOAL),$(MAKECMDGOALS)),)
-    MAKECMDGOALS := $(patsubst $(unbundled_goals),,$(MAKECMDGOALS))
+  ifneq ($(filter $(DEFAULT_GOAL),$(MAKELIQUIDDGOALS)),)
+    MAKELIQUIDDGOALS := $(patsubst $(unbundled_goals),,$(MAKELIQUIDDGOALS))
   else
-    MAKECMDGOALS := $(patsubst $(unbundled_goals),$(DEFAULT_GOAL),$(MAKECMDGOALS))
+    MAKELIQUIDDGOALS := $(patsubst $(unbundled_goals),$(DEFAULT_GOAL),$(MAKELIQUIDDGOALS))
   endif
 
 .PHONY: $(unbundled_goals)
-$(unbundled_goals): $(MAKECMDGOALS)
+$(unbundled_goals): $(MAKELIQUIDDGOALS)
 endif # unbundled_goals
 
 # Default to building dalvikvm on hosts that support it...
@@ -186,13 +186,15 @@ all_product_configs := $(call get-product-makefiles,\
     $(SRC_TARGET_DIR)/product/AndroidProducts.mk)
 else
   ifneq ($(LIQUID_BUILD),)
-    all_product_configs := $(call import-products, device/*/$(LIQUID_BUILD)/liquid.mk)
+    all_product_configs := $(shell ls device/*/$(LIQUID_BUILD)/liquid.mk)
   else
     # Read in all of the product definitions specified by the AndroidProducts.mk
     # files in the tree.
     all_product_configs := $(get-all-product-makefiles)
+  endif # LIQUID_BUILD
 endif
 
+ifeq ($(LIQUID_BUILD),)
 # Find the product config makefile for the current product.
 # all_product_configs consists items like:
 # <product_name>:<path_to_the_product_makefile>
@@ -211,13 +213,19 @@ $(foreach f, $(all_product_configs),\
         $(eval all_product_makefiles += $(f))\
         $(if $(filter $(TARGET_PRODUCT),$(basename $(notdir $(f)))),\
             $(eval current_product_makefile += $(f)),)))
+
 _cpm_words :=
 _cpm_word1 :=
 _cpm_word2 :=
+else
+    current_product_makefile := $(strip $(all_product_configs))
+    all_product_makefiles := $(strip $(all_product_configs))
+endif
 current_product_makefile := $(strip $(current_product_makefile))
 all_product_makefiles := $(strip $(all_product_makefiles))
 
-ifneq (,$(filter product-graph dump-products, $(MAKECMDGOALS)))
+
+ifneq (,$(filter product-graph dump-products, $(MAKELIQUIDDGOALS)))
 # Import all product makefiles.
 $(call import-products, $(all_product_makefiles))
 else
@@ -234,7 +242,7 @@ endif  # Import all or just the current product makefile
 # Sanity check
 $(check-all-products)
 
-ifneq ($(filter dump-products, $(MAKECMDGOALS)),)
+ifneq ($(filter dump-products, $(MAKELIQUIDDGOALS)),)
 $(dump-products)
 $(error done)
 endif
@@ -373,3 +381,4 @@ PRODUCT_OTA_PUBLIC_KEYS := $(sort \
 
 PRODUCT_EXTRA_RECOVERY_KEYS := $(sort \
     $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_EXTRA_RECOVERY_KEYS))
+
