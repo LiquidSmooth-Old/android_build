@@ -88,7 +88,7 @@ INTERNAL_VALID_VARIANTS := user userdebug eng tests
 # Provide "PRODUCT-<prodname>-<goal>" targets, which lets you build
 # a particular configuration without needing to set up the environment.
 #
-product_goals := $(strip $(filter PRODUCT-%,$(MAKELIQUIDDGOALS)))
+product_goals := $(strip $(filter PRODUCT-%,$(MAKECMDGOALS)))
 ifdef product_goals
   # Scrape the product and build names out of the goal,
   # which should be of the form PRODUCT-<productname>-<buildname>.
@@ -112,7 +112,7 @@ ifdef product_goals
   # The build server wants to do make PRODUCT-dream-installclean
   # which really means TARGET_PRODUCT=dream make installclean.
   ifneq ($(filter-out $(INTERNAL_VALID_VARIANTS),$(TARGET_BUILD_VARIANT)),)
-    MAKELIQUIDDGOALS := $(MAKELIQUIDDGOALS) $(TARGET_BUILD_VARIANT)
+    MAKECMDGOALS := $(MAKECMDGOALS) $(TARGET_BUILD_VARIANT)
     TARGET_BUILD_VARIANT := eng
     default_goal_substitution :=
   else
@@ -132,14 +132,14 @@ ifdef product_goals
   # attempt to build, but it's important because we inspect this value
   # in certain situations (like for "make sdk").
   #
-  MAKELIQUIDDGOALS := $(patsubst $(goal_name),$(default_goal_substitution),$(MAKELIQUIDDGOALS))
+  MAKECMDGOALS := $(patsubst $(goal_name),$(default_goal_substitution),$(MAKECMDGOALS))
 
   # Define a rule for the PRODUCT-* goal, and make it depend on the
   # patched-up command-line goals as well as any other goals that we
   # want to force.
   #
 .PHONY: $(goal_name)
-$(goal_name): $(MAKELIQUIDDGOALS)
+$(goal_name): $(MAKECMDGOALS)
 endif
 # else: Use the value set in the environment or buildspec.mk.
 
@@ -147,20 +147,20 @@ endif
 # Provide "APP-<appname>" targets, which lets you build
 # an unbundled app.
 #
-unbundled_goals := $(strip $(filter APP-%,$(MAKELIQUIDDGOALS)))
+unbundled_goals := $(strip $(filter APP-%,$(MAKECMDGOALS)))
 ifdef unbundled_goals
   ifneq ($(words $(unbundled_goals)),1)
     $(error Only one APP-* goal may be specified; saw "$(unbundled_goals)"))
   endif
   TARGET_BUILD_APPS := $(strip $(subst -, ,$(patsubst APP-%,%,$(unbundled_goals))))
-  ifneq ($(filter $(DEFAULT_GOAL),$(MAKELIQUIDDGOALS)),)
-    MAKELIQUIDDGOALS := $(patsubst $(unbundled_goals),,$(MAKELIQUIDDGOALS))
+  ifneq ($(filter $(DEFAULT_GOAL),$(MAKECMDGOALS)),)
+    MAKECMDGOALS := $(patsubst $(unbundled_goals),,$(MAKECMDGOALS))
   else
-    MAKELIQUIDDGOALS := $(patsubst $(unbundled_goals),$(DEFAULT_GOAL),$(MAKELIQUIDDGOALS))
+    MAKECMDGOALS := $(patsubst $(unbundled_goals),$(DEFAULT_GOAL),$(MAKECMDGOALS))
   endif
 
 .PHONY: $(unbundled_goals)
-$(unbundled_goals): $(MAKELIQUIDDGOALS)
+$(unbundled_goals): $(MAKECMDGOALS)
 endif # unbundled_goals
 
 # Default to building dalvikvm on hosts that support it...
@@ -225,7 +225,7 @@ current_product_makefile := $(strip $(current_product_makefile))
 all_product_makefiles := $(strip $(all_product_makefiles))
 
 
-ifneq (,$(filter product-graph dump-products, $(MAKELIQUIDDGOALS)))
+ifneq (,$(filter product-graph dump-products, $(MAKECMDGOALS)))
 # Import all product makefiles.
 $(call import-products, $(all_product_makefiles))
 else
@@ -242,7 +242,7 @@ endif  # Import all or just the current product makefile
 # Sanity check
 $(check-all-products)
 
-ifneq ($(filter dump-products, $(MAKELIQUIDDGOALS)),)
+ifneq ($(filter dump-products, $(MAKECMDGOALS)),)
 $(dump-products)
 $(error done)
 endif
