@@ -270,7 +270,7 @@ ifneq (,$(user_variant))
   endif
 
 # Turn off Odexing
- WITH_DEXPREOPT := true
+ WITH_DEXPREOPT := false
 
   # Disallow mock locations by default for user builds
   ADDITIONAL_DEFAULT_PROPERTIES += ro.allow.mock.location=0
