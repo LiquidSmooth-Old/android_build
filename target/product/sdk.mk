@@ -26,13 +26,7 @@ PRODUCT_PACKAGES := \
 	Gallery \
 	Music \
 	Mms \
-	OpenWnn \
-	libWnnEngDic \
-	libWnnJpnDic \
-	libwnndict \
 	Phone \
-	PinyinIME \
-	libjni_pinyinime \
 	Protips \
 	SoftKeyboard \
 	SystemUI \
@@ -52,7 +46,6 @@ PRODUCT_PACKAGES := \
 	ApiDemos \
 	GestureBuilder \
 	CubeLiveWallpapers \
-	QuickSearchBox \
 	WidgetPreview \
 	monkeyrunner \
 	guavalib \
