@@ -4,7 +4,7 @@
 ####################################
 
 # TODO: replace it with device's BOOTCLASSPATH
-DEXPREOPT_BOOT_JARS := core:core-junit:bouncycastle:ext:framework:framework2:telephony-common:mms-common:android.policy:services:apache-xml
+DEXPREOPT_BOOT_JARS := core:core-junit:bouncycastle:ext:framework:telephony-common:mms-common:android.policy:services:apache-xml
 DEXPREOPT_BOOT_JARS_MODULES := $(subst :, ,$(DEXPREOPT_BOOT_JARS))
 
 DEXPREOPT_BUILD_DIR := $(OUT_DIR)
@@ -48,7 +48,7 @@ $(eval _dbj_jar_no_dex := $(DEXPREOPT_BOOT_JAR_DIR_FULL_PATH)/$(1)_nodex.jar)
 $(eval _dbj_src_jar := $(call intermediates-dir-for,JAVA_LIBRARIES,$(1),,COMMON)/javalib.jar)
 $(eval $(_dbj_odex): PRIVATE_DBJ_JAR := $(_dbj_jar))
 $(_dbj_odex) : $(_dbj_src_jar) | $(ACP) $(DEXPREOPT) $(DEXOPT)
-	@echo "Dexpreopt Boot Jar: $$@"
+	@echo -e ${CL_GRN}"Dexpreopt Boot Jar:"${CL_RST}" $$@"
 	$(hide) rm -f $$@
 	$(hide) mkdir -p $$(dir $$@)
 	$(hide) $(ACP) -fp $$< $$(PRIVATE_DBJ_JAR)

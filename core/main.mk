@@ -120,6 +120,41 @@ $(warning ************************************************************)
 $(error Directory names containing spaces not supported)
 endif
 
+
+# Check for the correct version of java
+java_version := $(shell java -version 2>&1 | head -n 1 | grep '^java .*[ "]1\.6[\. "$$]')
+ifneq ($(shell java -version 2>&1 | grep -i openjdk),)
+java_version :=
+endif
+ifeq ($(strip $(java_version)),)
+$(info ************************************************************)
+$(info You are attempting to build with an unsupported version)
+$(info of java.)
+$(info $(space))
+$(info Your version is: $(shell java -version 2>&1 | head -n 1).)
+$(info The correct version is: Java SE 1.6.)
+$(info $(space))
+$(info Please follow the machine setup instructions at)
+$(info $(space)$(space)$(space)$(space)https://source.android.com/source/download.html)
+$(info ************************************************************)
+endif
+
+# Check for the correct version of javac
+javac_version := $(shell javac -version 2>&1 | head -n 1 | grep '[ "]1\.6[\. "$$]')
+ifeq ($(strip $(javac_version)),)
+$(info ************************************************************)
+$(info You are attempting to build with the incorrect version)
+$(info of javac.)
+$(info $(space))
+$(info Your version is: $(shell javac -version 2>&1 | head -n 1).)
+$(info The correct version is: 1.6.)
+$(info $(space))
+$(info Please follow the machine setup instructions at)
+$(info $(space)$(space)$(space)$(space)https://source.android.com/source/download.html)
+$(info ************************************************************)
+$(error stop)
+endif
+
 ifeq (darwin,$(HOST_OS))
 GCC_REALPATH = $(realpath $(shell which gcc))
 ifneq ($(findstring llvm-gcc,$(GCC_REALPATH)),)
@@ -159,9 +194,6 @@ $(shell echo 'VERSIONS_CHECKED := $(VERSION_CHECK_SEQUENCE_NUMBER)' \
 $(shell echo 'BUILD_EMULATOR := $(BUILD_EMULATOR)' \
         >> $(OUT_DIR)/versions_checked.mk)
 endif
-
-#Override all settings and dont build an emu
-BUILD_EMULATOR := false
 
 # These are the modifier targets that don't do anything themselves, but
 # change the behavior of the build.
@@ -263,14 +295,22 @@ ifneq (,$(user_variant))
     tags_to_install += debug
 
     # Enable Dalvik lock contention logging for userdebug builds.
-    ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=750
+    ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.lockprof.threshold=500
   else
     # Disable debugging in plain user builds.
     enable_target_debugging :=
   endif
 
-  # Turn off Odexing
-  WITH_DEXPREOPT := false
+  # Turn on Dalvik preoptimization for user builds, but only if not
+  # explicitly disabled and the build is running on Linux (since host
+  # Dalvik isn't built for non-Linux hosts).
+  ifneq (true,$(DISABLE_DEXPREOPT))
+    ifeq ($(user_variant),user)
+      ifeq ($(HOST_OS),linux)
+        WITH_DEXPREOPT := true
+      endif
+    endif
+  endif
 
   # Disallow mock locations by default for user builds
   ADDITIONAL_DEFAULT_PROPERTIES += ro.allow.mock.location=0
@@ -699,7 +739,6 @@ $(ALL_C_CPP_ETC_OBJECTS): | all_copied_headers
 .PHONY: files
 files: prebuilt \
         $(modules_to_install) \
-        $(modules_to_check) \
         $(INSTALLED_ANDROID_INFO_TXT_TARGET)
 
 # -------------------------------------------------------------------
@@ -851,7 +890,7 @@ $(foreach module,$(sample_MODULES),$(eval $(call \
 sample_ADDITIONAL_INSTALLED := \
         $(filter-out $(modules_to_install) $(modules_to_check) $(ALL_PREBUILT),$(sample_MODULES))
 samplecode: $(sample_APKS_COLLECTION)
-	@echo "Collect sample code apks: $^"
+	@echo -e ${CL_GRN}"Collect sample code apks:"${CL_RST}" $^"
 	# remove apks that are not intended to be installed.
 	rm -f $(sample_ADDITIONAL_INSTALLED)
 
@@ -860,8 +899,8 @@ findbugs: $(INTERNAL_FINDBUGS_HTML_TARGET) $(INTERNAL_FINDBUGS_XML_TARGET)
 
 .PHONY: clean
 clean:
-	@rm -rf $(OUT_DIR)
-	@echo "Entire build directory removed."
+	@rm -rf $(OUT_DIR)/*
+	@echo -e ${CL_GRN}"Entire build directory removed."${CL_RST}
 
 .PHONY: clobber
 clobber: clean
@@ -871,7 +910,7 @@ clobber: clean
 #xxx scrape this from ALL_MODULE_NAME_TAGS
 .PHONY: modules
 modules:
-	@echo "Available sub-modules:"
+	@echo -e ${CL_GRN}"Available sub-modules:"${CL_RST}
 	@echo "$(call module-names-for-tag-list,$(ALL_MODULE_TAGS))" | \
 	      tr -s ' ' '\n' | sort -u | $(COLUMN)
 

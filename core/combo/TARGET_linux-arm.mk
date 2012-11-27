@@ -104,7 +104,7 @@ ifeq ($(TARGET_DISABLE_ARM_PIE),true)
 else
    PIE_GLOBAL_CFLAGS := -fPIE
    PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
-endif   
+endif
 
 TARGET_GLOBAL_CFLAGS += \
 			-msoft-float -fpic $(PIE_GLOBAL_CFLAGS) \

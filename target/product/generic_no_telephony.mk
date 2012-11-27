@@ -34,8 +34,8 @@ PRODUCT_PACKAGES := \
     LatinIME \
     Launcher2 \
     Music \
-    Phone \
     Provision \
+    Phone \
     Settings \
     SystemUI \
     CalendarProvider \

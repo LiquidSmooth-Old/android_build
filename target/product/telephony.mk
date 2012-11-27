@@ -20,3 +20,4 @@
 PRODUCT_PACKAGES := \
     Mms \
     rild
+

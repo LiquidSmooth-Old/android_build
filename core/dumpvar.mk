@@ -11,24 +11,16 @@ endif
 
 # Add the ARM toolchain bin dir if it actually exists
 ifeq ($(TARGET_ARCH),arm)
-    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/arm/arm-linux-androideabi-4.6/bin),)
+    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6/bin),)
         # this should be copied to HOST_OUT_EXECUTABLES instead
-        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/arm/arm-linux-androideabi-4.6/bin
-    else
-        ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6/bin),)
-            ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6/bin
-        endif
+        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-4.6/bin
     endif
 else ifeq ($(TARGET_ARCH),x86)
 
 # Add the x86 toolchain bin dir if it actually exists
-    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/x86/i686-android-linux-4.4.3/bin),)
+    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-4.6/bin),)
         # this should be copied to HOST_OUT_EXECUTABLES instead
-        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)/x86/i686-android-linux-4.4.3/bin
-    else
-        ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-android-linux-4.4.3/bin),)
-            ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-android-linux-4.4.3/bin
-        endif
+        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-4.6/bin
     endif
 endif
 
@@ -40,9 +32,7 @@ endif
 
 ANDROID_BUILD_PATHS := $(ABP)
 ANDROID_PREBUILTS := prebuilt/$(HOST_PREBUILT_TAG)
-ANDROID_PREBUILTS_EXTRA := prebuilt/$(HOST_PREBUILT_EXTRA_TAG)
 ANDROID_GCC_PREBUILTS := prebuilts/gcc/$(HOST_PREBUILT_TAG)
-ANDROID_GCC_PREBUILTS_EXTRA := prebuilts/gcc/$(HOST_PREBUILT_EXTRA_TAG)
 
 # The "dumpvar" stuff lets you say something like
 #
