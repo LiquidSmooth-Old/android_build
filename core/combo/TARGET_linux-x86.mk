@@ -36,7 +36,7 @@ include $(TARGET_ARCH_SPECIFIC_MAKEFILE)
 
 # You can set TARGET_TOOLS_PREFIX to get gcc from somewhere else
 ifeq ($(strip $(TARGET_TOOLS_PREFIX)),)
-TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-4.6
+TARGET_TOOLCHAIN_ROOT := prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-$(TARGET_GCC_VERSION)
 TARGET_TOOLS_PREFIX := $(TARGET_TOOLCHAIN_ROOT)/bin/i686-linux-android-
 endif
 
@@ -84,6 +84,7 @@ TARGET_GLOBAL_CFLAGS += \
 			-Ulinux \
 			-Wa,--noexecstack \
 			-Werror=format-security \
+			-D_FORTIFY_SOURCE=1 \
 			-Wstrict-aliasing=2 \
 			-fPIC -fPIE \
 			-ffunction-sections \
