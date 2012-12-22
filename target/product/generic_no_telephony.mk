@@ -23,20 +23,14 @@ PRODUCT_PACKAGES := \
     DeskClock \
     Bluetooth \
     Calculator \
-    Calendar \
     CertInstaller \
     DrmProvider \
-    Email \
     Email2 \
-    Exchange \
     Exchange2 \
     FusedLocation \
     Gallery2 \
     InputDevices \
-    LatinIME \
-    Launcher2 \
     Music \
-    Provision \
     Phone \
     Settings \
     SystemUI \
@@ -75,7 +69,7 @@ PRODUCT_COPY_FILES := \
 $(call inherit-product-if-exists, frameworks/base/data/fonts/fonts.mk)
 $(call inherit-product-if-exists, external/cibu-fonts/fonts.mk)
 $(call inherit-product-if-exists, external/lohit-fonts/fonts.mk)
-$(call inherit-product-if-exists, external/naver-fonts/fonts.mk)
+#$(call inherit-product-if-exists, external/naver-fonts/fonts.mk)
 $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core.mk)
 

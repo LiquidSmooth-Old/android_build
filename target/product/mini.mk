@@ -161,9 +161,7 @@ PRODUCT_PACKAGES += \
     Bluetooth \
     FusedLocation \
     InputDevices \
-    LatinIME \
     Phone \
-    Provision \
     hostapd \
     wpa_supplicant.conf
 
@@ -172,12 +170,7 @@ PRODUCT_PACKAGES += \
     icu.dat
 
 PRODUCT_PACKAGES += \
-    librs_jni \
-    libvideoeditor_jni \
-    libvideoeditor_core \
-    libvideoeditor_osal \
-    libvideoeditor_videofilters \
-    libvideoeditorplayer \
+    librs_jni
 
 PRODUCT_PACKAGES += \
     audio.primary.default \
@@ -191,9 +184,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.carrier=unknown
-
 #----------------- originally from full_base.mk ----------------
 
 PRODUCT_PACKAGES += \
@@ -201,13 +191,6 @@ PRODUCT_PACKAGES += \
     libdrmframework \
     libdrmframework_jni \
     WAPPushManager
-
-
-# Additional settings used in all AOSP builds
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.com.android.dateformat=MM-dd-yyyy \
-    ro.config.ringtone=Ring_Synth_04.ogg \
-    ro.config.notification_sound=pixiedust.ogg
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
 $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
@@ -217,7 +200,6 @@ $(call inherit-product-if-exists, frameworks/base/data/sounds/AudioPackage5.mk)
 #----------------- For PDK ------------------------------
 PRODUCT_PACKAGES += \
     TestingCamera \
-    Home \
     DummySystemUI \
     DummySettings \
     libsurfaceflinger_ddmconnection

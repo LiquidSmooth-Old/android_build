@@ -27,10 +27,8 @@ PRODUCT_PACKAGES := \
 	Music \
 	Mms \
 	Phone \
-	Protips \
 	SoftKeyboard \
 	SystemUI \
-	Launcher2 \
 	Development \
 	DevelopmentSettings \
 	DrmProvider \
@@ -40,7 +38,6 @@ PRODUCT_PACKAGES := \
 	CustomLocale \
 	sqlite3 \
 	InputDevices \
-	LatinIME \
 	CertInstaller \
 	LiveWallpapersPicker \
 	ApiDemos \
@@ -56,7 +53,6 @@ PRODUCT_PACKAGES := \
 	ConnectivityTest \
 	GpsLocationTest \
 	CalendarProvider \
-	Calendar \
 	SmokeTest \
 	SmokeTestApp \
 	rild \

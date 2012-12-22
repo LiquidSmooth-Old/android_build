@@ -28,8 +28,6 @@ PRODUCT_PACKAGES += \
     DefaultContainerService \
     DownloadProvider \
     DownloadProviderUi \
-    HTMLViewer \
-    Home \
     KeyChain \
     MediaProvider \
     PackageInstaller \

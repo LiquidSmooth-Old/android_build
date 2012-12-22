@@ -27,7 +27,6 @@ PRODUCT_PACKAGES += \
     applypatch \
     bmgr \
     bootanimation \
-    bugreport \
     content \
     dbus-daemon \
     debuggerd \
