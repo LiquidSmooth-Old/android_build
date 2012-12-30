@@ -31,6 +31,7 @@ PRODUCT_PACKAGES := \
     Gallery2 \
     InputDevices \
     Music \
+    MusicFX \
     Phone \
     Settings \
     SystemUI \
