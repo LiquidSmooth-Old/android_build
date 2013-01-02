@@ -47,10 +47,6 @@ PRODUCT_COPY_FILES += \
 
 #----------------- originally from core.mk ----------------
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.config.notification_sound=OnTheHunt.ogg \
-    ro.config.alarm_alert=Alarm_Classic.ogg
-
 # Please keep this list sorted alphabetically
 PRODUCT_PACKAGES += \
     ApplicationsProvider \

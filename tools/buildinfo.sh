@@ -43,5 +43,4 @@ echo "ro.build.fingerprint=$BUILD_FINGERPRINT"
 echo "ro.build.characteristics=$TARGET_AAPT_CHARACTERISTICS"
 
 echo "ro.liquid.device=$LIQUID_DEVICE"
-
 echo "# end build properties"

@@ -6,20 +6,14 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - croot:   Changes directory to the top of the tree.
 - m:       Makes from the top of the tree.
 - mm:      Builds all of the modules in the current directory.
-- mmp:     Builds all of the modules in the current directory and pushes them to the device.
 - mmm:     Builds all of the modules in the supplied directories.
-- mmmp:    Builds all of the modules in the supplied directories and pushes them to the device.
 - cgrep:   Greps on all local C/C++ files.
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
-- aospremote: Add git remote for matching AOSP repository.
-- mka:      Builds using SCHED_BATCH on all processors.
-- mkap:     Builds the module(s) using mka and pushes them to the device.
-- cmka:     Cleans and builds using mka.
-- reposync: Parallel repo sync using ionice and SCHED_BATCH.
-- installboot: Installs a boot.img to the connected device.
-- installrecovery: Installs a recovery.img to the connected device.
+- mka:      Builds using SCHED_BATCH on all processors
+- mkapush:  Same as mka with the addition of adb pushing to the device.
+- reposync: Parallel repo sync using ionice and SCHED_BATCH
 
 Look at the source to view more functions. The complete list is:
 EOF
@@ -133,13 +127,17 @@ function setpaths()
     prebuiltdir=$(getprebuilt)
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
 
+    # defined in core/config.mk
+    targetgccversion=$(get_build_var TARGET_GCC_VERSION)
+    export TARGET_GCC_VERSION=$targetgccversion
+
     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
     local ARCH=$(get_build_var TARGET_ARCH)
     case $ARCH in
         x86) toolchaindir=x86/i686-linux-android-4.6/bin
             ;;
-        arm) toolchaindir=arm/arm-linux-androideabi-4.6/bin
+        arm) toolchaindir=arm/arm-linux-androideabi-$targetgccversion/bin
             ;;
         mips) toolchaindir=mips/mipsel-linux-android-4.6/bin
             ;;
@@ -155,7 +153,7 @@ function setpaths()
     unset ARM_EABI_TOOLCHAIN ARM_EABI_TOOLCHAIN_PATH
     case $ARCH in
         arm)
-            toolchaindir=arm/arm-eabi-4.6/bin
+            toolchaindir=arm/arm-eabi-$targetgccversion/bin
             if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
                  export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
                  ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"
@@ -437,7 +435,6 @@ function add_lunch_combo()
 }
 
 # add the default one here
-
 function print_lunch_menu()
 {
     local uname=$(uname)
@@ -651,16 +648,10 @@ function eat()
             done
             echo "Device Found.."
         fi
-        # if adbd isn't root we can't write to /cache/recovery/
-        adb root
-        sleep 1
-        adb wait-for-device
         echo "Pushing $ZIPFILE to device"
         if adb push $ZIPPATH /storage/sdcard0/ ; then
-            # Optional path for sdcard0 in recovery
-            [ -z "$1" ] && DIR=sdcard || DIR=$1
             cat << EOF > /tmp/command
---update_package=/$DIR/0/$ZIPFILE
+--update_package=/sdcard/$ZIPFILE
 EOF
             if adb push /tmp/command /cache/recovery/ ; then
                 echo "Rebooting into recovery for installation"
@@ -673,12 +664,6 @@ EOF
         return 1
     fi
     return $?
-}
-
-function omnom
-{
-    brunch $*
-    eat
 }
 
 function gettop
@@ -1176,7 +1161,7 @@ function smoketest()
         return
     fi
 
-    (cd "$T" && make SmokeTest SmokeTestApp) &&
+    (cd "$T" && mmm tests/SmokeTest) &&
       adb uninstall com.android.smoketest > /dev/null &&
       adb uninstall com.android.smoketest.tests > /dev/null &&
       adb install $ANDROID_PRODUCT_OUT/data/app/SmokeTestApp.apk &&
@@ -1239,131 +1224,6 @@ function godir () {
     cd $T/$pathname
 }
 
-function aospremote()
-{
-    git remote rm aosp 2> /dev/null
-    if [ ! -d .git ]
-    then
-        echo .git directory not found. Please run this from the root directory of the Android repository you wish to set up.
-    fi
-    PROJECT=`pwd | sed s#$ANDROID_BUILD_TOP/##g`
-    if (echo $PROJECT | grep -qv "^device")
-    then
-        PFX="platform/"
-    fi
-    git remote add aosp https://android.googlesource.com/$PFX$PROJECT
-    echo "Remote 'aosp' created"
-}
-export -f aospremote
-
-function installboot()
-{
-    if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
-    then
-        echo "No recovery.fstab found. Build recovery first."
-        return 1
-    fi
-    if [ ! -e "$OUT/boot.img" ];
-    then
-        echo "No boot.img found. Run make bootimage first."
-        return 1
-    fi
-    PARTITION=`grep "^\/boot" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
-    PARTITION_TYPE=`grep "^\/boot" $OUT/recovery/root/etc/recovery.fstab | awk {'print $2'}`
-    if [ -z "$PARTITION" ];
-    then
-        echo "Unable to determine boot partition."
-        return 1
-    fi
-    adb start-server
-    adb root
-    sleep 1
-    adb wait-for-device
-    adb remount
-    adb wait-for-device
-    if (adb shell cat /system/build.prop | grep -q "ro.liquid.device=$LIQUID_BUILD");
-    then
-        adb push $OUT/boot.img /cache/
-        for i in $OUT/system/lib/modules/*;
-        do
-            adb push $i /system/lib/modules/
-        done
-        if [ "$PARTITION_TYPE" == "mtd" ];
-        then
-            adb shell flash_image $PARTITION /cache/boot.img
-        else
-            adb shell dd if=/cache/boot.img of=$PARTITION
-        fi
-        adb shell chmod 644 /system/lib/modules/*
-        echo "Installation complete."
-    else
-        echo "The connected device does not appear to be $LIQUID_BUILD, run away!"
-    fi
-}
-
-function installrecovery()
-{
-    if [ ! -e "$OUT/recovery/root/etc/recovery.fstab" ];
-    then
-        echo "No recovery.fstab found. Build recovery first."
-        return 1
-    fi
-    if [ ! -e "$OUT/recovery.img" ];
-    then
-        echo "No recovery.img found. Run make recoveryimage first."
-        return 1
-    fi
-    PARTITION=`grep "^\/recovery" $OUT/recovery/root/etc/recovery.fstab | awk {'print $3'}`
-    if [ -z "$PARTITION" ];
-    then
-        echo "Unable to determine recovery partition."
-        return 1
-    fi
-    adb start-server
-    adb root
-    sleep 1
-    adb wait-for-device
-    adb remount
-    adb wait-for-device
-    if (adb shell cat /system/build.prop | grep -q "ro.liquid.device=$LIQUID_BUILD");
-    then
-        adb push $OUT/recovery.img /cache/
-        adb shell dd if=/cache/recovery.img of=$PARTITION
-        echo "Installation complete."
-    else
-        echo "The connected device does not appear to be $LIQUID_BUILD, run away!"
-    fi
-}
-
-function makerecipe() {
-  if [ -z "$1" ]
-  then
-    echo "No branch name provided."
-    return 1
-  fi
-  cd .repo
-  mv local_manifest.xml local_manifest.xml.bak
-  cd ..
-  cd android
-  sed -i s/'default revision=.*'/'default revision="refs\/heads\/'$1'"'/ default.xml
-  git commit -a -m "$1"
-  cd ..
-
-  repo forall -c '
-
-  if [ "$REPO_REMOTE" == "github" ]
-  then
-    pwd
-    cmremote
-    git push cmremote HEAD:refs/heads/'$1'
-  fi
-  '
-
-  cd .repo
-  mv local_manifest.xml.bak local_manifest.xml
-  cd ..
-}
-
 function mka() {
     case `uname -s` in
         Darwin)
@@ -1375,24 +1235,57 @@ function mka() {
     esac
 }
 
-function cmka() {
-    if [ ! -z "$1" ]; then
-        for i in "$@"; do
-            case $i in
-                bacon|otapackage|systemimage)
-                    mka installclean
-                    mka $i
-                    ;;
-                *)
-                    mka clean-$i
-                    mka $i
-                    ;;
-            esac
-        done
-    else
-        mka clean
-        mka
-    fi
+
+function mkapush() {
+    # There's got to be a better way to do this stupid shit.
+    case `uname -s` in
+        Darwin)
+            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
+                make -j `sysctl hw.ncpu|cut -d" " -f2` installed-file-list
+            fi
+            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
+            ;;
+        *)
+            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
+                schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) installed-file-list
+            fi
+            schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) "$@"
+            ;;
+    esac
+    case $@ in
+        *\ * )
+            echo $@ | awk 'gsub(/ /,"\n") {print}' | while read line; do
+                blackmagic=`sed -n "/$line/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
+                if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
+                elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
+                    adb_stop=true
+                fi
+                adb remount
+                if [ $adb_stop = true ]; then
+                    adb shell stop
+                fi
+                adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
+                if [ $adb_stop = true ]; then
+                    adb shell start
+                fi
+            done
+            ;;
+        *)
+            blackmagic=`sed -n "/$@/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
+            if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
+            elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
+                adb_stop=true
+            fi
+            adb remount
+            if [ $adb_stop = true ]; then
+                adb shell stop
+            fi
+            adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
+            if [ $adb_stop = true ]; then
+                adb shell start
+            fi
+            ;;
+    esac
 }
 
 function reposync() {
@@ -1401,81 +1294,10 @@ function reposync() {
             repo sync -j 4 "$@"
             ;;
         *)
-            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -j 4 "$@"
+            schedtool -B -n 1 -e ionice -n 1 repo sync -j 4 "$@"
             ;;
     esac
 }
-
-function repodiff() {
-    if [ -z "$*" ]; then
-        echo "Usage: repodiff <ref-from> [[ref-to] [--numstat]]"
-        return
-    fi
-    diffopts=$* repo forall -c \
-      'echo "$REPO_PATH ($REPO_REMOTE)"; git diff ${diffopts} 2>/dev/null ;'
-}
-
-# Credit for color strip sed: http://goo.gl/BoIcm
-function dopush()
-{
-    local func=$1
-    shift
-
-    adb start-server # Prevent unexpected starting server message from adb get-state in the next line
-    if [ $(adb get-state) != device -a $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) != 0 ] ; then
-        echo "No device is online. Waiting for one..."
-        echo "Please connect USB and/or enable USB debugging"
-        until [ $(adb get-state) = device -o $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) = 0 ];do
-            sleep 1
-        done
-        echo "Device Found."
-    fi
-
-    adb root &> /dev/null
-    sleep 0.3
-    adb wait-for-device &> /dev/null
-    sleep 0.3
-    adb remount &> /dev/null
-
-    $func $* | tee $OUT/.log
-
-    # Install: <file>
-    LOC=$(cat $OUT/.log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Install' | cut -d ':' -f 2)
-
-    # Copy: <file>
-    LOC=$LOC $(cat $OUT/.log | sed -r 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' | grep 'Copy' | cut -d ':' -f 2)
-
-    for FILE in $LOC; do
-        # Get target file name (i.e. system/bin/adb)
-        TARGET=$(echo $FILE | sed "s#$OUT/##")
-
-        # Don't send files that are not in /system.
-        if ! echo $TARGET | egrep '^system\/' > /dev/null ; then
-            continue
-        else
-            case $TARGET in
-            system/app/SystemUI.apk|system/framework/*)
-                stop_n_start=true
-            ;;
-            *)
-                stop_n_start=false
-            ;;
-            esac
-            if $stop_n_start ; then adb shell stop ; fi
-            echo "Pushing: $TARGET"
-            adb push $FILE $TARGET
-            if $stop_n_start ; then adb shell start ; fi
-        fi
-    done
-    rm -f $OUT/.log
-    return 0
-}
-
-alias mmp='dopush mm'
-alias mmmp='dopush mmm'
-alias mkap='dopush mka'
-alias cmkap='dopush cmka'
-
 
 # Force JAVA_HOME to point to java 1.6 if it isn't already set
 function set_java_home() {
@@ -1503,7 +1325,6 @@ fi
 
 # Execute the contents of any vendorsetup.sh files we can find.
 for f in `/bin/ls vendor/*/vendorsetup.sh vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh 2> /dev/null`
-
 do
     echo "including $f"
     . $f

@@ -1,18 +1,4 @@
-# Copyright (C) 2012 The CyanogenMod Project
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Android makefile to build kernel as a part of Android Build
+#Android makefile to build kernel as a part of Android Build
 
 TARGET_AUTO_KDIR := $(shell echo $(TARGET_DEVICE_DIR) | sed -e 's/^device/kernel/g')
 
@@ -24,7 +10,11 @@ KERNEL_SRC := $(TARGET_KERNEL_SOURCE)
 KERNEL_DEFCONFIG := $(TARGET_KERNEL_CONFIG)
 
 ## Internal variables
+ifeq ($(OUT_DIR),out)
+KERNEL_OUT := $(ANDROID_BUILD_TOP)/$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
+else
 KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
+endif
 KERNEL_CONFIG := $(KERNEL_OUT)/.config
 
 ifeq ($(BOARD_USES_UBOOT),true)
@@ -84,7 +74,7 @@ else
         $(warning * Please add the TARGET_KERNEL_CONFIG variable to your   *)
         $(warning * BoardConfig.mk file                                    *)
         $(warning **********************************************************)
-        # $(error "NO KERNEL CONFIG")
+        $(error "NO KERNEL CONFIG")
     else
         #$(info Kernel source found, building it)
         FULL_KERNEL_BUILD := true
@@ -132,13 +122,13 @@ ifeq ($(TARGET_ARCH),arm)
       endif
     endif
     ifneq ($(TARGET_KERNEL_CUSTOM_TOOLCHAIN),)
-        ifeq ($(HOST_OS),darwin)
-            ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/darwin-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
-        else
-            ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/linux-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
-        endif
+      ifeq ($(HOST_OS),darwin)
+        ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/darwin-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
+      else
+        ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ANDROID_BUILD_TOP)/prebuilt/linux-x86/toolchain/$(TARGET_KERNEL_CUSTOM_TOOLCHAIN)/bin/arm-eabi-"
+      endif
     else
-        ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ARM_EABI_TOOLCHAIN)/arm-eabi-"
+      ARM_CROSS_COMPILE:=CROSS_COMPILE="$(ccache) $(ARM_EABI_TOOLCHAIN)/arm-eabi-"
     endif
     ccache = 
 endif
