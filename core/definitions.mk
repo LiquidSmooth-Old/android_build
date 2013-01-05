@@ -574,10 +574,6 @@ endef
 ###########################################################
 ## Convert "a b c" into "a:b:c"
 ###########################################################
-
-empty :=
-space := $(empty) $(empty)
-
 define normalize-path-list
 $(subst $(space),:,$(strip $(1)))
 endef
@@ -1556,7 +1552,7 @@ define transform-classes.jar-to-dex
 @echo -e ${CL_GRN}"target Dex:"${CL_RST}" $(PRIVATE_MODULE)"
 @mkdir -p $(dir $@)
 $(hide) $(DX) \
-    $(if $(findstring windows,$(HOST_OS)),,-JXms16M -JXmx2048M) \
+    $(if $(findstring windows,$(HOST_OS)),,-JXms16M -JXmx$(if $(call streq,$(HOST_BITS),32),1024,2048)M) \
     --dex --output=$@ \
     $(incremental_dex) \
     $(if $(NO_OPTIMIZE_DX), \

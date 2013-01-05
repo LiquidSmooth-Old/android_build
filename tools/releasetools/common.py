@@ -176,7 +176,7 @@ def LoadRecoveryFSTab(zip):
     line = line.strip()
     if not line or line.startswith("#"): continue
     pieces = line.split()
-    if not (3 <= len(pieces) <= 4):
+    if not (3 <= len(pieces) <= 7):
       raise ValueError("malformed recovery.fstab line: \"%s\"" % (line,))
 
     p = Partition()
@@ -185,7 +185,7 @@ def LoadRecoveryFSTab(zip):
     p.device = pieces[2]
     p.length = 0
     options = None
-    if len(pieces) >= 4:
+    if len(pieces) >= 4 and pieces[3] != 'NULL':
       if pieces[3].startswith("/"):
         p.device2 = pieces[3]
         if len(pieces) >= 5:
@@ -241,29 +241,40 @@ def BuildBootableImage(sourcedir, fs_config_file, info_dict=None):
   assert p1.returncode == 0, "mkbootfs of %s ramdisk failed" % (targetname,)
   assert p2.returncode == 0, "minigzip of %s ramdisk failed" % (targetname,)
 
-  cmd = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
-
-  fn = os.path.join(sourcedir, "cmdline")
+  """check if uboot is requested"""
+  fn = os.path.join(sourcedir, "ubootargs")
   if os.access(fn, os.F_OK):
-    cmd.append("--cmdline")
-    cmd.append(open(fn).read().rstrip("\n"))
+    cmd = ["mkimage"]
+    for argument in open(fn).read().rstrip("\n").split(" "):
+      cmd.append(argument)
+    cmd.append("-d")
+    cmd.append(os.path.join(sourcedir, "kernel")+":"+ramdisk_img.name)
+    cmd.append(img.name)
 
-  fn = os.path.join(sourcedir, "base")
-  if os.access(fn, os.F_OK):
-    cmd.append("--base")
-    cmd.append(open(fn).read().rstrip("\n"))
+  else:
+    cmd = ["mkbootimg", "--kernel", os.path.join(sourcedir, "kernel")]
 
-  fn = os.path.join(sourcedir, "pagesize")
-  if os.access(fn, os.F_OK):
-    cmd.append("--pagesize")
-    cmd.append(open(fn).read().rstrip("\n"))
+    fn = os.path.join(sourcedir, "cmdline")
+    if os.access(fn, os.F_OK):
+      cmd.append("--cmdline")
+      cmd.append(open(fn).read().rstrip("\n"))
 
-  args = info_dict.get("mkbootimg_args", None)
-  if args and args.strip():
-    cmd.extend(args.split())
+    fn = os.path.join(sourcedir, "base")
+    if os.access(fn, os.F_OK):
+      cmd.append("--base")
+      cmd.append(open(fn).read().rstrip("\n"))
 
-  cmd.extend(["--ramdisk", ramdisk_img.name,
-              "--output", img.name])
+    fn = os.path.join(sourcedir, "pagesize")
+    if os.access(fn, os.F_OK):
+      cmd.append("--pagesize")
+      cmd.append(open(fn).read().rstrip("\n"))
+
+    args = info_dict.get("mkbootimg_args", None)
+    if args and args.strip():
+      cmd.extend(args.split())
+
+    cmd.extend(["--ramdisk", ramdisk_img.name,
+                "--output", img.name])
 
   p = Run(cmd, stdout=subprocess.PIPE)
   p.communicate()
@@ -386,8 +397,14 @@ def SignFile(input_name, output_name, key, password, align=None,
   else:
     sign_name = output_name
 
-  cmd = ["java", "-Xmx2048m", "-jar",
+  check = (sys.maxsize > 2**32)
+  if check is True:
+    cmd = ["java", "-Xmx2048m", "-jar",
            os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
+  else:
+    cmd = ["java", "-Xmx1024m", "-jar",
+           os.path.join(OPTIONS.search_path, "framework", "signapk.jar")]
+
   if whole_file:
     cmd.append("-w")
   cmd.extend([key + ".x509.pem", key + ".pk8",
@@ -865,7 +882,8 @@ def ComputeDifferences(diffs):
 
 
 # map recovery.fstab's fs_types to mount/format "partition types"
-PARTITION_TYPES = { "ext2": "EMMC",
+PARTITION_TYPES = { "bml": "BML",
+                    "ext2": "EMMC",
                     "ext3": "EMMC",
                     "ext4": "EMMC",
                     "emmc": "EMMC",

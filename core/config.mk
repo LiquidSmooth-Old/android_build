@@ -14,6 +14,11 @@ else
 SHELL := /bin/bash
 endif
 
+# Utility variables.
+empty :=
+space := $(empty) $(empty)
+comma := ,
+
 # Tell python not to spam the source tree with .pyc files.  This
 # only has an effect on python 2.6 and above.
 export PYTHONDONTWRITEBYTECODE := 1
@@ -223,7 +228,6 @@ TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
 # use GCC version 4.7
 TARGET_GCC_VERSION := 4.7
 
-
 # $(1): os/arch
 define select-android-config-h
 build/core/combo/include/arch/$(1)/AndroidConfig.h
@@ -287,6 +291,7 @@ MINIGZIP := $(HOST_OUT_EXECUTABLES)/minigzip$(HOST_EXECUTABLE_SUFFIX)
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 MKYAFFS2 := $(HOST_OUT_EXECUTABLES)/mkyaffs2image$(HOST_EXECUTABLE_SUFFIX)
 APICHECK := $(HOST_OUT_EXECUTABLES)/apicheck$(HOST_EXECUTABLE_SUFFIX)
+MKIMAGE :=  $(HOST_OUT_EXECUTABLES)/mkimage$(HOST_EXECUTABLE_SUFFIX)
 FS_GET_STATS := $(HOST_OUT_EXECUTABLES)/fs_get_stats$(HOST_EXECUTABLE_SUFFIX)
 MKEXT2IMG := $(HOST_OUT_EXECUTABLES)/genext2fs$(HOST_EXECUTABLE_SUFFIX)
 MAKE_EXT4FS := $(HOST_OUT_EXECUTABLES)/make_ext4fs$(HOST_EXECUTABLE_SUFFIX)
@@ -354,6 +359,18 @@ ifeq ($(HOST_OS),darwin)
 MD5SUM:=md5 -q
 else
 MD5SUM:=md5sum
+endif
+
+# In-place sed is done different in linux than OS X
+ifeq ($(HOST_OS),darwin)
+GSED:=$(shell which gsed)
+ifeq ($(GSED),)
+SED_INPLACE:=sed -i ''
+else
+SED_INPLACE:=gsed -i
+endif
+else
+SED_INPLACE:=sed -i
 endif
 
 APICHECK_CLASSPATH := $(HOST_JDK_TOOLS_JAR)
