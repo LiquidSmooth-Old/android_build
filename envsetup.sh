@@ -11,9 +11,10 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
-- mka:      Builds using SCHED_BATCH on all processors
-- mkapush:  Same as mka with the addition of adb pushing to the device.
-- reposync: Parallel repo sync using ionice and SCHED_BATCH
+- mka:      Builds using SCHED_BATCH on all processors.
+- mkap:     Builds the module(s) using mka and pushes them to the device.
+- lska:     Cleans and builds using mka.
+- reposync: Parallel repo sync using ionice and SCHED_BATCH.
 
 Look at the source to view more functions. The complete list is:
 EOF
@@ -236,12 +237,16 @@ function settitle()
             PROMPT_COMMAND="echo -ne \"\033]0;${USER}@${HOSTNAME}: ${PWD}\007\";${PROMPT_COMMAND}"
         fi
         if [ -z "$apps" ]; then
-            PROMPT_PREFIX="[${arch}-${product}-${variant}]"
+            ANDROID_PROMPT_PREFIX="[${arch}-${product}-${variant}]"
         else
-            PROMPT_PREFIX="[$arch $apps $variant]"
+            ANDROID_PROMPT_PREFIX="[$arch $apps $variant]"
         fi
+	export ANDROID_PROMPT_PREFIX
+
         # Inject build data into hardstatus
-        export PROMPT_COMMAND=$(echo $PROMPT_COMMAND | sed -e 's/\\033]0;\(.*\)\\007/\\033]0;$PROMPT_PREFIX \1\\007/g')
+	if [ -z "$ANDROID_NO_PROMPT_COMMAND" ]; then
+            export PROMPT_COMMAND=$(echo $PROMPT_COMMAND | sed -e 's/\\033]0;\(.*\)\\007/\\033]0;$ANDROID_PROMPT_PREFIX \1\\007/g')
+	fi
     fi
 }
 
@@ -657,6 +662,8 @@ function eat()
             done
             echo "Device Found.."
         fi
+    if (adb shell cat /system/build.prop | grep -q "ro.liquid.device=$LIQUID_BUILD");
+    then
         # if adbd isn't root we can't write to /cache/recovery/
         adb root
         sleep 1
@@ -679,6 +686,9 @@ EOF
         return 1
     fi
     return $?
+    else
+        echo "The connected device does not appear to be $LIQUID_BUILD, run away!"
+    fi
 }
 
 function gettop
@@ -1250,57 +1260,24 @@ function mka() {
     esac
 }
 
-
-function mkapush() {
-    # There's got to be a better way to do this stupid shit.
-    case `uname -s` in
-        Darwin)
-            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
-                make -j `sysctl hw.ncpu|cut -d" " -f2` installed-file-list
-            fi
-            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
-            ;;
-        *)
-            if [ ! -f $ANDROID_PRODUCT_OUT/installed-files.txt ]; then
-                schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) installed-file-list
-            fi
-            schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) "$@"
-            ;;
-    esac
-    case $@ in
-        *\ * )
-            echo $@ | awk 'gsub(/ /,"\n") {print}' | while read line; do
-                blackmagic=`sed -n "/$line/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
-                if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
-                elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
-                    adb_stop=true
-                fi
-                adb remount
-                if [ $adb_stop = true ]; then
-                    adb shell stop
-                fi
-                adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
-                if [ $adb_stop = true ]; then
-                    adb shell start
-                fi
-            done
-            ;;
-        *)
-            blackmagic=`sed -n "/$@/{p;q;}" $ANDROID_PRODUCT_OUT/installed-files.txt | awk {'print $2'}`
-            if [ `echo $blackmagic | cut -f3 -d "/" = framework ];
-            elif [ `echo $blackmagic | cut -f4 -d "/" = SystemUI.apk ]; then
-                adb_stop=true
-            fi
-            adb remount
-            if [ $adb_stop = true ]; then
-                adb shell stop
-            fi
-            adb push $ANDROID_PRODUCT_OUT$blackmagic $blackmagic
-            if [ $adb_stop = true ]; then
-                adb shell start
-            fi
-            ;;
-    esac
+function lska() {
+    if [ ! -z "$1" ]; then
+        for i in "$@"; do
+            case $i in
+                liquid|otapackage|systemimage)
+                    mka installclean
+                    mka $i
+                    ;;
+                *)
+                    mka clean-$i
+                    mka $i
+                    ;;
+            esac
+        done
+    else
+        mka clean
+        mka
+    fi
 }
 
 function reposync() {
@@ -1309,7 +1286,7 @@ function reposync() {
             repo sync -j 4 "$@"
             ;;
         *)
-            schedtool -B -n 1 -e ionice -n 1 repo sync -j 4 "$@"
+            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -j 4 "$@"
             ;;
     esac
 }
@@ -1340,6 +1317,7 @@ fi
 
 # Execute the contents of any vendorsetup.sh files we can find.
 for f in `/bin/ls vendor/*/vendorsetup.sh vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh 2> /dev/null`
+
 do
     echo "including $f"
     . $f

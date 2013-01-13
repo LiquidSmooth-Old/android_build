@@ -86,13 +86,6 @@ else
 TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
 endif
 
-# Turn off strict-aliasing if we're building an AOSP variant without the
-# patchset...
-ifeq ($(DEBUG_NO_STRICT_ALIASING),yes)
-TARGET_arm_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
-TARGET_thumb_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
-endif   
-
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
 # or in your environment to force a full arm build, even for
 # files that are normally built as thumb; this can make
@@ -107,8 +100,16 @@ ifeq ($(FORCE_ARM_DEBUGGING),true)
   TARGET_thumb_CFLAGS += -marm -fno-omit-frame-pointer
 endif
 
+ifeq ($(TARGET_DISABLE_ARM_PIE),true)
+   PIE_GLOBAL_CFLAGS :=
+   PIE_EXECUTABLE_TRANSFORM := -Wl,-T,$(BUILD_SYSTEM)/armelf.x
+else
+   PIE_GLOBAL_CFLAGS := -fPIE
+   PIE_EXECUTABLE_TRANSFORM := -fPIE -pie
+endif
+
 TARGET_GLOBAL_CFLAGS += \
-			-msoft-float -fpic -fPIE \
+			-msoft-float -fpic $(PIE_GLOBAL_CFLAGS) \
 			-ffunction-sections \
 			-fdata-sections \
 			-funwind-tables \
@@ -281,7 +282,7 @@ $(hide) $(PRIVATE_CXX) \
 endef
 
 define transform-o-to-executable-inner
-$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic -fPIE -pie \
+$(hide) $(PRIVATE_CXX) -nostdlib -Bdynamic $(PIE_EXECUTABLE_TRANSFORM) \
 	-Wl,-dynamic-linker,/system/bin/linker \
 	-Wl,--gc-sections \
 	-Wl,-z,nocopyreloc \
