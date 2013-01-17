@@ -90,7 +90,9 @@ ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
     TARGET_thumb_CFLAGS :=  -mthumb \
                             -O3 \
                             -fomit-frame-pointer \
-                            -fno-strict-aliasing
+                            -fstrict-aliasing \
+                            -Wstrict-aliasing=2 \
+                            -Werror=strict-aliasing
     endif
 else
 TARGET_thumb_CFLAGS := $(TARGET_arm_CFLAGS)
