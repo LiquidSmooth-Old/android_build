@@ -1265,18 +1265,18 @@ function lska() {
         for i in "$@"; do
             case $i in
                 liquid|otapackage|systemimage)
-                    mka installclean
-                    mka $i
+                    mka clean
+                    time mka $i
                     ;;
                 *)
                     mka clean-$i
-                    mka $i
+                    time mka $i
                     ;;
             esac
         done
     else
         mka clean
-        mka
+        time mka
     fi
 }
 
