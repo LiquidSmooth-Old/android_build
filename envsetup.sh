@@ -236,17 +236,19 @@ function settitle()
             # Prompts exist, but no hardstatus
             PROMPT_COMMAND="echo -ne \"\033]0;${USER}@${HOSTNAME}: ${PWD}\007\";${PROMPT_COMMAND}"
         fi
+        if [ ! -z "$ANDROID_PROMPT_PREFIX" ]; then
+            PROMPT_COMMAND=$(echo $PROMPT_COMMAND | sed -e 's/$ANDROID_PROMPT_PREFIX //g')
+        fi
+
         if [ -z "$apps" ]; then
             ANDROID_PROMPT_PREFIX="[${arch}-${product}-${variant}]"
         else
             ANDROID_PROMPT_PREFIX="[$arch $apps $variant]"
         fi
-	export ANDROID_PROMPT_PREFIX
+        export ANDROID_PROMPT_PREFIX
 
         # Inject build data into hardstatus
-	if [ -z "$ANDROID_NO_PROMPT_COMMAND" ]; then
-            export PROMPT_COMMAND=$(echo $PROMPT_COMMAND | sed -e 's/\\033]0;\(.*\)\\007/\\033]0;$ANDROID_PROMPT_PREFIX \1\\007/g')
-	fi
+        export PROMPT_COMMAND=$(echo $PROMPT_COMMAND | sed -e 's/\\033]0;\(.*\)\\007/\\033]0;$ANDROID_PROMPT_PREFIX \1\\007/g')
     fi
 }
 
@@ -558,6 +560,17 @@ function lunch()
 
     local product=$(echo -n $selection | sed -e "s/-.*$//")
     check_product $product
+    if [ $? -ne 0 ]
+    then
+        # if we can't find a product, try to grab it off the CM github
+        T=$(gettop)
+        pushd $T > /dev/null
+        build/tools/roomservice.py $product
+        popd > /dev/null
+        check_product $product
+    else
+        build/tools/roomservice.py $product true
+    fi
     if [ $? -ne 0 ]
     then
         echo
@@ -1265,18 +1278,18 @@ function lska() {
         for i in "$@"; do
             case $i in
                 liquid|otapackage|systemimage)
-                    mka clean
-                    time mka $i
+                    mka installclean
+                    mka $i
                     ;;
                 *)
                     mka clean-$i
-                    time mka $i
+                    mka $i
                     ;;
             esac
         done
     else
         mka clean
-        time mka
+        mka
     fi
 }
 
