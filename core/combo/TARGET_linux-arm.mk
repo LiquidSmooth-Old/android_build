@@ -90,7 +90,6 @@ ifeq ($(ARCH_ARM_HAVE_THUMB_SUPPORT),true)
     TARGET_thumb_CFLAGS :=  -mthumb \
                             -O3 \
                             -fomit-frame-pointer \
-                            -ftree-vectorize \
                             -funsafe-math-optimizations \
                             -fstrict-aliasing \
                             -Wstrict-aliasing=2 \
