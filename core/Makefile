@@ -846,7 +846,16 @@ ifdef is_tests_build
 #    $(tests_MODULES))
 endif
 
-FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
+# FIXME The ifneq ... construct below is a workaround for a bug in the
+# version of make currently (2013/02) installed on android-build.
+# On android-build, even if native-toolchain is present, gcc gets built
+# after system.img, causing it to be missing.
+# Local builds with make 3.82 work fine without this hack.
+ifneq ($(findstring developer,-$(LINARO_BUILD_SPEC)),)
+INTERNAL_SYSTEMIMAGE_FILES += $(PRODUCT_OUT)/system/bin/gcc
+endif
+FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) \
+	$(INTERNAL_USERIMAGES_DEPS)
 # -----------------------------------------------------------------
 # installed file list
 # Depending on anything that $(BUILT_SYSTEMIMAGE) depends on.
