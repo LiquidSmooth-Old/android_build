@@ -13,6 +13,22 @@ ARCH_ARM_HAVE_VFP               := true
 ARCH_ARM_HAVE_VFP_D32           := true
 ARCH_ARM_HAVE_NEON              := true
 
+ifeq ($(TARGET_ARCH_VARIANT_CPU), cortex-a15)
+ARCH_ARM_HAVE_NEON_UNALIGNED_ACCESS    := true
+ARCH_ARM_NEON_MEMSET_DIVIDER           := 132
+#ARCH_ARM_NEON_MEMCPY_ALIGNMENT_DIVIDER := 224
+endif
+ifeq ($(TARGET_ARCH_VARIANT_CPU), cortex-a9)
+ARCH_ARM_HAVE_NEON_UNALIGNED_ACCESS    := true
+ARCH_ARM_NEON_MEMSET_DIVIDER           := 132
+ARCH_ARM_NEON_MEMCPY_ALIGNMENT_DIVIDER := 224
+endif
+ifeq ($(TARGET_ARCH_VARIANT_CPU), cortex-a8)
+ARCH_ARM_HAVE_NEON_UNALIGNED_ACCESS    := true
+ARCH_ARM_NEON_MEMSET_DIVIDER           := 132
+ARCH_ARM_NEON_MEMCPY_ALIGNMENT_DIVIDER := 224
+endif
+
 # Note: Hard coding the 'tune' value here is probably not ideal,
 # and a better solution should be found in the future.
 #
