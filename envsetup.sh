@@ -645,7 +645,7 @@ function tapas()
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.liquid\.version/s/.*=//p' $OUT/system/build.prop`
+        MODVERSION=$(get_build_var LIQUID_VERSION)
         ZIPFILE=liquid-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
