@@ -81,6 +81,13 @@ TARGET_thumb_CFLAGS :=  -mthumb \
 			-Wstrict-aliasing=2 \
 			-Werror=strict-aliasing
 
+# Turn off strict-aliasing if we're building an AOSP variant without the
+# patchset...
+ifeq ($(DEBUG_NO_STRICT_ALIASING),yes)
+TARGET_arm_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
+TARGET_thumb_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
+endif
+
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
 # or in your environment to force a full arm build, even for
 # files that are normally built as thumb; this can make

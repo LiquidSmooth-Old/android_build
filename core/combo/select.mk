@@ -53,6 +53,11 @@ $(combo_target)RELEASE_CFLAGS += -Werror=strict-aliasing
 else
 $(combo_target)RELEASE_CFLAGS += -Wno-error=strict-aliasing
 endif
+# Turn off strict-aliasing if we're building an AOSP variant without the
+# patchset...
+ifeq ($(DEBUG_NO_STRICT_ALIASING),yes)
+$(combo_target)RELEASE_CFLAGS += -fno-strict-aliasing -Wno-error=strict-aliasing
+endif
 $(combo_target)GLOBAL_LDFLAGS := -Wl,-O2
 $(combo_target)GLOBAL_ARFLAGS := crsP
 
