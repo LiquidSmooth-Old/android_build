@@ -77,7 +77,9 @@ TARGET_arm_CFLAGS :=    -O3 \
 TARGET_thumb_CFLAGS :=  -mthumb \
                         -O3 \
                         -fomit-frame-pointer \
-                        -fno-strict-aliasing
+			-fstrict-aliasing \
+			-Wstrict-aliasing=2 \
+			-Werror=strict-aliasing
 
 # Set FORCE_ARM_DEBUGGING to "true" in your buildspec.mk
 # or in your environment to force a full arm build, even for
@@ -154,6 +156,7 @@ TARGET_RELEASE_CFLAGS += \
 			-DNDEBUG \
 			-g \
 			-Wstrict-aliasing=2 \
+			-Werror=strict-aliasing \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \
 			-frename-registers
