@@ -364,4 +364,11 @@
  */
 #define HAVE_GNU_QSORT_R 0
 
+#ifdef __clang__
+/*
+ * Define to 1 when using Clang
+ */
+#define HAVE_UNWIND_CONTEXT_STRUCT 1
+#endif
+
 #endif /* _ANDROID_CONFIG_H */
