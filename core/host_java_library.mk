@@ -96,7 +96,7 @@ $(full_classes_compiled_jar): $(java_sources) $(java_resource_sources) $(full_ja
 # Run jarjar if necessary, otherwise just copy the file.
 ifneq ($(strip $(LOCAL_JARJAR_RULES)),)
 $(full_classes_jarjar_jar): PRIVATE_JARJAR_RULES := $(LOCAL_JARJAR_RULES)
-$(full_classes_jarjar_jar): $(full_classes_compiled_jar) | $(JARJAR)
+$(full_classes_jarjar_jar): $(full_classes_compiled_jar) $(LOCAL_JARJAR_RULES) | $(JARJAR)
 	@echo -e ${CL_YLW}"JarJar:"${CL_RST}" $@"
 	$(hide) java -jar $(JARJAR) process $(PRIVATE_JARJAR_RULES) $< $@
 else
@@ -115,7 +115,7 @@ $(built_dex): $(full_classes_jar) $(DX)
 	$(transform-classes.jar-to-dex)
 
 $(LOCAL_BUILT_MODULE): PRIVATE_DEX_FILE := $(built_dex)
-$(LOCAL_BUILT_MODULE): $(built_dex) $(java_resource_sources) | $(AAPT)
+$(LOCAL_BUILT_MODULE): $(built_dex) $(java_resource_sources)
 	@echo -e ${CL_YLW}"Host Jar:"${CL_RST}" $(PRIVATE_MODULE) ($@)"
 	$(create-empty-package)
 	$(add-dex-to-package)
