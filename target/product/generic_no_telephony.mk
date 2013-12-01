@@ -23,7 +23,6 @@ PRODUCT_PACKAGES := \
     DeskClock \
     Bluetooth \
     Calculator \
-    Calendar \
     Camera2 \
     CertInstaller \
     Email \
@@ -33,13 +32,9 @@ PRODUCT_PACKAGES := \
     InputDevices \
     Keyguard \
     LatinIME \
-    Launcher2 \
-    Music \
-    MusicFX \
     OneTimeInitializer \
     PrintSpooler \
     Provision \
-    QuickSearchBox \
     Settings \
     SystemUI \
     TeleService \
@@ -61,12 +56,7 @@ PRODUCT_PACKAGES += \
     wpa_supplicant
 
 PRODUCT_PACKAGES += \
-    librs_jni \
-    libvideoeditor_jni \
-    libvideoeditor_core \
-    libvideoeditor_osal \
-    libvideoeditor_videofilters \
-    libvideoeditorplayer \
+    librs_jni
 
 PRODUCT_PACKAGES += \
     audio.primary.default \
@@ -80,12 +70,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES := \
         frameworks/av/media/libeffects/data/audio_effects.conf:system/etc/audio_effects.conf
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.carrier=unknown
-
 $(call inherit-product-if-exists, frameworks/base/data/fonts/fonts.mk)
 $(call inherit-product-if-exists, external/noto-fonts/fonts.mk)
-$(call inherit-product-if-exists, external/naver-fonts/fonts.mk)
+#$(call inherit-product-if-exists, external/naver-fonts/fonts.mk)
 $(call inherit-product-if-exists, external/sil-fonts/fonts.mk)
 $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
 $(call inherit-product-if-exists, frameworks/webview/chromium/chromium.mk)
