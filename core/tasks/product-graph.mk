@@ -71,21 +71,13 @@ $(products_graph): PRIVATE_PRODUCTS_FILTER := $(products_list)
 
 $(products_graph): $(this_makefile)
 	@echo Product graph DOT:"${CL_RST}" $@ for $(PRIVATE_PRODUCTS_FILTER)
-	$(hide) ( \
-		echo 'digraph {'; \
-		echo 'graph [ ratio=.5 ];'; \
-		$(foreach p,$(PRIVATE_PRODUCTS), \
-			$(foreach d,$(PRODUCTS.$(strip $(p)).INHERITS_FROM), echo \"$(d)\" -\> \"$(p)\";)) \
-		$(foreach prod, $(PRIVATE_PRODUCTS), \
-			echo \"$(prod)\" [ \
-					label=\"$(dir $(prod))\\n$(notdir $(prod))\\n\\n$(PRODUCTS.$(strip $(prod)).PRODUCT_MODEL)\\n$(PRODUCTS.$(strip $(prod)).PRODUCT_DEVICE)\" \
-					$(if $(filter $(prod),$(PRIVATE_PRODUCTS_FILTER)), style=\"filled\" fillcolor=\"#FFFDB0\",) \
-					fontcolor=\"darkblue\" href=\"products/$(prod).html\" \
-				];) \
-		echo '}' \
-	) \
-	| ./build/tools/filter-product-graph.py $(PRIVATE_PRODUCTS_FILTER) \
-	> $@
+	$(hide) echo 'digraph {' > $@.in
+	$(hide) echo 'graph [ ratio=.5 ];' >> $@.in
+	$(hide) $(foreach p,$(PRIVATE_PRODUCTS), \
+	  $(foreach d,$(PRODUCTS.$(strip $(p)).INHERITS_FROM), echo \"$(d)\" -\> \"$(p)\" >> $@.in;))
+	$(foreach p,$(PRIVATE_PRODUCTS),$(call emit-product-node-props,$(p),$@.in))
+	$(hide) echo '}' >> $@.in
+	$(hide) ./build/tools/filter-product-graph.py $(PRIVATE_PRODUCTS_FILTER) < $@.in > $@
 
 # Evaluates to the name of the product file
 # $(1) product file
