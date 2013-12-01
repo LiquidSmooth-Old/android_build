@@ -3,6 +3,10 @@
 # current configuration and platform, which
 # are not specific to what is being built.
 
+
+# use GCC version 4.7
+TARGET_GCC_VERSION := 4.7
+
 # Only use ANDROID_BUILD_SHELL to wrap around bash.
 # DO NOT use other shells such as zsh.
 ifdef ANDROID_BUILD_SHELL
