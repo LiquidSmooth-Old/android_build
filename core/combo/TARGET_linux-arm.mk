@@ -77,9 +77,9 @@ TARGET_arm_CFLAGS :=    -O3 \
 TARGET_thumb_CFLAGS :=  -mthumb \
                         -O3 \
                         -fomit-frame-pointer \
-			-fstrict-aliasing \
-			-Wstrict-aliasing=2 \
-			-Werror=strict-aliasing
+			            -fstrict-aliasing \
+			            -Wstrict-aliasing=2 \
+			            -Werror=strict-aliasing
 
 # Turn off strict-aliasing if we're building an AOSP variant without the
 # patchset...
