@@ -1,4 +1,18 @@
-#Android makefile to build kernel as a part of Android Build
+# Copyright (C) 2012 The CyanogenMod Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Android makefile to build kernel as a part of Android Build
 
 TARGET_AUTO_KDIR := $(shell echo $(TARGET_DEVICE_DIR) | sed -e 's/^device/kernel/g')
 
@@ -51,7 +65,7 @@ ifeq "$(wildcard $(KERNEL_SRC) )" ""
         $(warning * THIS IS DEPRECATED, AND WILL BE DISCONTINUED                *)
         $(warning * Please configure your device to download the kernel         *)
         $(warning * source repository to $(KERNEL_SRC))
-        $(warning * See http://wiki.cyanogenmod.com/wiki/Integrated_kernel_building)
+        $(warning * See http://wiki.cyanogenmod.org/w/Doc:_integrated_kernel_building)
         $(warning * for more information                                        *)
         $(warning ***************************************************************)
         FULL_KERNEL_BUILD := false
