@@ -788,7 +788,7 @@ $(recovery_ramdisk): $(MKBOOTFS) \
 	@echo -e ${CL_CYN}"----- Making recovery ramdisk ------"${CL_RST}
 	$(MINIGZIP) < $(recovery_uncompressed_ramdisk) > $@
 
-ifndef ifndef BOARD_CUSTOM_BOOTIMG_MK
+ifndef BOARD_CUSTOM_BOOTIMG_MK
 $(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTIMG) \
 		$(recovery_ramdisk) \
 		$(recovery_kernel)
