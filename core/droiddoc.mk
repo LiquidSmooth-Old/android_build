@@ -157,7 +157,7 @@ html_dir_files := $(shell find $(LOCAL_PATH)/$(LOCAL_DROIDDOC_HTML_DIR) -type f)
 
 $(full_target): $(full_src_files) $(droiddoc_templates) $(droiddoc) $(html_dir_files) $(full_java_lib_deps) $(LOCAL_ADDITIONAL_DEPENDENCIES)
 	@echo -e ${CL_YLW}"Docs droiddoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
-	$(hide) mkdir -p $(dir $(full_target))
+	$(hide) mkdir -p $(dir $@)
 	$(call prepare-doc-source-list,$(PRIVATE_SRC_LIST_FILE),$(PRIVATE_JAVA_FILES), \
 			$(PRIVATE_SOURCE_INTERMEDIATES_DIR) $(PRIVATE_ADDITIONAL_JAVA_DIR))
 	$(hide) ( \
@@ -193,7 +193,7 @@ else
 ##
 $(full_target): $(full_src_files) $(full_java_lib_deps)
 	@echo -e ${CL_YLW}"Docs javadoc:"${CL_RST}" $(PRIVATE_OUT_DIR)"
-	@mkdir -p $(dir $(full_target))
+	@mkdir -p $(dir $@)
 	$(call prepare-doc-source-list,$(PRIVATE_SRC_LIST_FILE),$(PRIVATE_JAVA_FILES), \
 			$(PRIVATE_SOURCE_INTERMEDIATES_DIR) $(PRIVATE_ADDITIONAL_JAVA_DIR))
 	$(hide) ( \
