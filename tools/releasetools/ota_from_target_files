@@ -418,12 +418,29 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if OPTIONS.wipe_user_data:
     script.FormatPartition("/data")
 
+  script.Print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+  script.Print("     \ )        (          )\ ) )\ )          ")
+  script.Print("     (()/  (   ( )\     (  (()/((()/(         ")
+  script.Print("     (_)) ((_) (_)_)   /((_)(_)) (_))         ")
+  script.Print("     | |   (_) / _ \ (_))( |_ _| |   \        ")
+  script.Print("     | |__ | || (_) || || | | |  | |) |       ")
+  script.Print("     |____||_| \__\_\ \_,_||___| |___/        ")	  	
+  script.Print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+  script.Print("          <%%% Liquid-Kitkat %%%>             ")
+  script.Print("         <%%% By LiquidSmooth %%%>            ")
+  script.Print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+  script.Print("Erasing System...")
+
   if "selinux_fc" in OPTIONS.info_dict:
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
   script.FormatPartition("/system")
+  script.Print("Mounting System...")
   script.Mount("/system")
+  script.ShowProgress(0.5, 40)
+  script.Print("Installing System...")
   script.UnpackPackageDir("system", "/system")
+  script.Print("Creating Symlinks...") 
 
   symlinks = CopySystemFiles(input_zip, output_zip)
   script.MakeSymlinks(symlinks)
@@ -442,9 +459,11 @@ def WriteFullOTAPackage(input_zip, output_zip):
   script.ShowProgress(0.2, 0)
 
   script.ShowProgress(0.2, 10)
+  script.Print("Flashing Boot Image...")
   script.WriteRawImage("/boot", "boot.img")
 
   script.ShowProgress(0.1, 0)
+  script.Print("Installation Completed!")
   device_specific.FullOTA_InstallEnd()
 
   if OPTIONS.extra_script is not None:
