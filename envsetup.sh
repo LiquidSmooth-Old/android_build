@@ -13,8 +13,9 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
-- mka:      Builds using SCHED_BATCH on all processors
-- reposync: Parallel repo sync using ionice and SCHED_BATCH
+- mka:      Builds using SCHED_BATCH on all processors.
+- mkap:     Builds the module(s) using mka and pushes them to the device.
+- reposync: Parallel repo sync using ionice and SCHED_BATCH.
 
 Look at the source to view more functions. The complete list is:
 EOF
