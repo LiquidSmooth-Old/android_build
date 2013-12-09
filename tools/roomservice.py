@@ -85,7 +85,7 @@ def get_device_url(git_data):
                     break
 
     if device_url:
-        return device_url
+        return "{}/{}".format(android_team, device_url)
     raise Exception("{} not found in {} Github, exiting "
                     "roomservice".format(device, android_team))
 
