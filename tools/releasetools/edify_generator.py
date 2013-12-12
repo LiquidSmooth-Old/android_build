@@ -92,11 +92,13 @@ class EdifyGenerator(object):
 
   def AssertDevice(self, device):
     """Assert that the device identifier is the given string."""
-    cmd = ('getprop("ro.product.device") == "%s" || '
-           'abort("This package is for \\"%s\\" devices; '
+    cmd = ('assert(' +
+           ' || \0'.join(['getprop("ro.product.device") == "%s" || getprop("ro.build.product") == "%s"'
+                         % (i, i) for i in device.split(",")]) +
+           ' || abort("This package is for \\"%s\\" devices; '
            'this is a \\"" + getprop("ro.product.device") + "\\".");'
-           ) % (device, device)
-    self.script.append(cmd)
+           ');') % device
+    self.script.append(self._WordWrap(cmd))
 
   def AssertSomeBootloader(self, *bootloaders):
     """Asert that the bootloader version is one of *bootloaders."""
@@ -214,11 +216,17 @@ class EdifyGenerator(object):
       args = {'device': p.device, 'fn': fn}
       if partition_type == "MTD":
         self.script.append(
-            'write_raw_image(package_extract_file("%(fn)s"), "%(device)s");'
+            'package_extract_file("%(fn)s", "/tmp/boot.img");'
+            'write_raw_image("/tmp/boot.img", "%(device)s");' % args
             % args)
       elif partition_type == "EMMC":
         self.script.append(
             'package_extract_file("%(fn)s", "%(device)s");' % args)
+      elif partition_type == "BML":
+	        self.script.append(
+            ('assert(package_extract_file("%(fn)s", "/tmp/%(device)s.img"),\n'
+             '       write_raw_image("/tmp/%(device)s.img", "%(device)s"),\n'
+             '       delete("/tmp/%(device)s.img"));') % args)
       else:
         raise ValueError("don't know how to write \"%s\" partitions" % (p.fs_type,))
 

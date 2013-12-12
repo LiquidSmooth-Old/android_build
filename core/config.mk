@@ -3,6 +3,10 @@
 # current configuration and platform, which
 # are not specific to what is being built.
 
+
+# use GCC version 4.7
+TARGET_GCC_VERSION := 4.7
+
 # Only use ANDROID_BUILD_SHELL to wrap around bash.
 # DO NOT use other shells such as zsh.
 ifdef ANDROID_BUILD_SHELL
@@ -135,6 +139,9 @@ endif
 # Define most of the global variables.  These are the ones that
 # are specific to the user's build configuration.
 include $(BUILD_SYSTEM)/envsetup.mk
+
+# Useful macros that can be used in board configs
+include $(BUILD_SYSTEM)/linaro_compilerchecks.mk
 
 # Boards may be defined under $(SRC_TARGET_DIR)/board/$(TARGET_DEVICE)
 # or under vendor/*/$(TARGET_DEVICE).  Search in both places, but
@@ -314,6 +321,7 @@ MINIGZIP := $(HOST_OUT_EXECUTABLES)/minigzip$(HOST_EXECUTABLE_SUFFIX)
 MKBOOTIMG := $(HOST_OUT_EXECUTABLES)/mkbootimg$(HOST_EXECUTABLE_SUFFIX)
 MKYAFFS2 := $(HOST_OUT_EXECUTABLES)/mkyaffs2image$(HOST_EXECUTABLE_SUFFIX)
 APICHECK := $(HOST_OUT_EXECUTABLES)/apicheck$(HOST_EXECUTABLE_SUFFIX)
+MKIMAGE :=  $(HOST_OUT_EXECUTABLES)/mkimage$(HOST_EXECUTABLE_SUFFIX)
 FS_GET_STATS := $(HOST_OUT_EXECUTABLES)/fs_get_stats$(HOST_EXECUTABLE_SUFFIX)
 MKEXT2IMG := $(HOST_OUT_EXECUTABLES)/genext2fs$(HOST_EXECUTABLE_SUFFIX)
 MAKE_EXT4FS := $(HOST_OUT_EXECUTABLES)/make_ext4fs$(HOST_EXECUTABLE_SUFFIX)
@@ -353,7 +361,7 @@ endif
 
 OLD_FLEX := prebuilts/misc/$(HOST_PREBUILT_TAG)/flex/flex-2.5.4a$(HOST_EXECUTABLE_SUFFIX)
 
-ifeq ($(HOST_OS),darwin)
+ifeq ($(BUILD_OS),darwin)
 # Mac OS' screwy version of java uses a non-standard directory layout
 # and doesn't even seem to have tools.jar.  On the other hand, javac seems
 # to be able to magically find the classes in there, wherever they are, so
@@ -378,6 +386,13 @@ ifeq ($(HOST_OS),darwin)
 MD5SUM:=md5 -q
 else
 MD5SUM:=md5sum
+endif
+
+# In-place sed is done different in linux than OS X
+ifeq ($(HOST_OS),darwin)
+SED_INPLACE:=sed -i ''
+else
+SED_INPLACE:=sed -i
 endif
 
 APICHECK_CLASSPATH := $(HOST_JDK_TOOLS_JAR)
@@ -422,11 +437,15 @@ TARGET_PROJECT_INCLUDES:= $(SRC_HEADERS) $(TARGET_OUT_HEADERS) \
 TARGET_GLOBAL_CFLAGS += $(TARGET_ERROR_FLAGS)
 TARGET_GLOBAL_CPPFLAGS += $(TARGET_ERROR_FLAGS)
 
+ifeq ($(TARGET_EXTRA_CPPFLAGS),)
+TARGET_EXTRA_CPPFLAGS := $(TARGET_EXTRA_CFLAGS)
+endif
+
 HOST_GLOBAL_CFLAGS += $(HOST_RELEASE_CFLAGS)
 HOST_GLOBAL_CPPFLAGS += $(HOST_RELEASE_CPPFLAGS)
 
-TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS)
-TARGET_GLOBAL_CPPFLAGS += $(TARGET_RELEASE_CPPFLAGS)
+TARGET_GLOBAL_CFLAGS += $(TARGET_RELEASE_CFLAGS) $(TARGET_EXTRA_CFLAGS)
+TARGET_GLOBAL_CPPFLAGS += $(TARGET_RELEASE_CPPFLAGS) $(TARGET_EXTRA_CPPFLAGS)
 
 # allow overriding default Java libraries on a per-target basis
 ifeq ($(TARGET_DEFAULT_JAVA_LIBRARIES),)
@@ -475,5 +494,11 @@ TARGET_PREBUILT_TAG := android-$(TARGET_ARCH)
 RS_PREBUILT_CLCORE := prebuilts/sdk/renderscript/lib/$(TARGET_ARCH)/libclcore.bc
 RS_PREBUILT_LIBPATH := -L prebuilts/ndk/8/platforms/android-9/arch-$(TARGET_ARCH)/usr/lib
 RS_PREBUILT_COMPILER_RT := prebuilts/sdk/renderscript/lib/$(TARGET_ARCH)/libcompiler_rt.a
+
+ifneq ($(LIQUID_BUILD),)
+## We need to be sure the global selinux policies are included
+## last, to avoid accidental resetting by device configs
+$(eval include vendor/liquid/sepolicy/sepolicy.mk)
+endif
 
 include $(BUILD_SYSTEM)/dumpvar.mk

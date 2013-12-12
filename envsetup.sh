@@ -4,15 +4,21 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - lunch:   lunch <product_name>-<build_variant>
 - tapas:   tapas [<App1> <App2> ...] [arm|x86|mips|armv5] [eng|userdebug|user]
 - croot:   Changes directory to the top of the tree.
+- cout:    Changes directory to out.
 - m:       Makes from the top of the tree.
-- mm:      Builds all of the modules in the current directory, but not their dependencies.
-- mmm:     Builds all of the modules in the supplied directories, but not their dependencies.
+- mm:      Builds all of the modules in the current directory.
+- mmp:     Builds all of the modules in the current directory and pushes them to the device.
+- mmm:     Builds all of the modules in the supplied directories.
+- mmmp:    Builds all of the modules in the supplied directories and pushes them to the device.
 - mma:     Builds all of the modules in the current directory, and their dependencies.
 - mmma:    Builds all of the modules in the supplied directories, and their dependencies.
 - cgrep:   Greps on all local C/C++ files.
 - jgrep:   Greps on all local Java files.
 - resgrep: Greps on all local res/*.xml files.
 - godir:   Go to the directory containing a file.
+- mka:      Builds using SCHED_BATCH on all processors.
+- mkap:     Builds the module(s) using mka and pushes them to the device.
+- reposync: Parallel repo sync using ionice and SCHED_BATCH.
 
 Look at the source to view more functions. The complete list is:
 EOF
@@ -57,6 +63,15 @@ function check_product()
         echo "Couldn't locate the top of the tree.  Try setting TOP." >&2
         return
     fi
+
+    if (echo -n $1 | grep -q -e "^liquid_") ; then
+       LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
+       export BUILD_NUMBER=$((date +%s%N ; echo $LIQUID_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
+    else
+       LIQUID_BUILD=
+    fi
+    export LIQUID_BUILD
+
     CALLED_FROM_SETUP=true BUILD_SYSTEM=build/core \
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -119,18 +134,20 @@ function setpaths()
     gccprebuiltdir=$(get_abs_build_var ANDROID_GCC_PREBUILTS)
 
     # defined in core/config.mk
-    targetgccversion=$(get_build_var TARGET_GCC_VERSION)
-    export TARGET_GCC_VERSION=$targetgccversion
+    targetgccversionarm=$(get_build_var TARGET_GCC_VERSION_ARM)
+    export TARGET_GCC_VERSION_ARM=$targetgccversionarm
+    targetgccversionand=$(get_build_var TARGET_GCC_VERSION_AND)
+    export TARGET_GCC_VERSION_AND=$targetgccversionand
 
     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
     export ANDROID_EABI_TOOLCHAIN=
     local ARCH=$(get_build_var TARGET_ARCH)
     case $ARCH in
-        x86) toolchaindir=x86/i686-linux-android-$targetgccversion/bin
+        x86) toolchaindir=x86/i686-linux-android-$targetgccversionand/bin
             ;;
-        arm) toolchaindir=arm/arm-linux-androideabi-$targetgccversion/bin
+        arm) toolchaindir=arm/arm-linux-androideabi-$targetgccversionand/bin
             ;;
-        mips) toolchaindir=mips/mipsel-linux-android-$targetgccversion/bin
+        mips) toolchaindir=mips/mipsel-linux-android-$targetgccversionand/bin
             ;;
         *)
             echo "Can't find toolchain for unknown architecture: $ARCH"
@@ -144,7 +161,7 @@ function setpaths()
     unset ARM_EABI_TOOLCHAIN ARM_EABI_TOOLCHAIN_PATH
     case $ARCH in
         arm)
-            toolchaindir=arm/arm-eabi-$targetgccversion/bin
+            toolchaindir=arm/arm-eabi-$targetgccversionarm/bin
             if [ -d "$gccprebuiltdir/$toolchaindir" ]; then
                  export ARM_EABI_TOOLCHAIN="$gccprebuiltdir/$toolchaindir"
                  ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"
@@ -203,8 +220,6 @@ function set_stuff_for_environment()
     set_java_home
     setpaths
     set_sequence_number
-
-    export ANDROID_BUILD_TOP=$(gettop)
 }
 
 function set_sequence_number()
@@ -219,35 +234,42 @@ function settitle()
         local product=$TARGET_PRODUCT
         local variant=$TARGET_BUILD_VARIANT
         local apps=$TARGET_BUILD_APPS
-        if [ -z "$apps" ]; then
-            export PROMPT_COMMAND="echo -ne \"\033]0;[${arch}-${product}-${variant}] ${USER}@${HOSTNAME}: ${PWD}\007\""
-        else
-            export PROMPT_COMMAND="echo -ne \"\033]0;[$arch $apps $variant] ${USER}@${HOSTNAME}: ${PWD}\007\""
+        if [ -z "$PROMPT_COMMAND"  ]; then
+            # No prompts
+            PROMPT_COMMAND="echo -ne \"\033]0;${USER}@${HOSTNAME}: ${PWD}\007\""
+        elif [ -z "$(echo $PROMPT_COMMAND | grep '033]0;')" ]; then
+            # Prompts exist, but no hardstatus
+            PROMPT_COMMAND="echo -ne \"\033]0;${USER}@${HOSTNAME}: ${PWD}\007\";${PROMPT_COMMAND}"
         fi
+        if [ ! -z "$ANDROID_PROMPT_PREFIX" ]; then
+            PROMPT_COMMAND="$(echo $PROMPT_COMMAND | sed -e 's/$ANDROID_PROMPT_PREFIX //g')"
+        fi
+
+        if [ -z "$apps" ]; then
+            ANDROID_PROMPT_PREFIX="[${arch}-${product}-${variant}]"
+        else
+            ANDROID_PROMPT_PREFIX="[$arch $apps $variant]"
+        fi
+        export ANDROID_PROMPT_PREFIX
+
+        # Inject build data into hardstatus
+        export PROMPT_COMMAND="$(echo $PROMPT_COMMAND | sed -e 's/\\033]0;\(.*\)\\007/\\033]0;$ANDROID_PROMPT_PREFIX \1\\007/g')"
     fi
 }
 
-function addcompletions()
+function check_bash_version()
 {
-    local T dir f
-
     # Keep us from trying to run in something that isn't bash.
     if [ -z "${BASH_VERSION}" ]; then
-        return
+        return 1
     fi
 
     # Keep us from trying to run in bash that's too old.
-    if [ ${BASH_VERSINFO[0]} -lt 3 ]; then
-        return
+    if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
+        return 2
     fi
 
-    dir="sdk/bash_completion"
-    if [ -d ${dir} ]; then
-        for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
-            echo "including $f"
-            . $f
-        done
-    fi
+    return 0
 }
 
 function choosetype()
@@ -426,10 +448,6 @@ function add_lunch_combo()
 }
 
 # add the default one here
-add_lunch_combo aosp_arm-eng
-add_lunch_combo aosp_x86-eng
-add_lunch_combo aosp_mips-eng
-add_lunch_combo vbox_x86-eng
 
 function print_lunch_menu()
 {
@@ -443,9 +461,9 @@ function print_lunch_menu()
     local choice
     for choice in ${LUNCH_MENU_CHOICES[@]}
     do
-        echo "     $i. $choice"
+        echo " $i. $choice "
         i=$(($i+1))
-    done
+    done | column
 
     echo
 }
@@ -518,6 +536,8 @@ function lunch()
     export TARGET_BUILD_TYPE=release
 
     echo
+
+    fixup_common_out_dir
 
     set_stuff_for_environment
     printconfig
@@ -630,10 +650,17 @@ function findmakefile()
 
 function mm()
 {
+    local MM_MAKE=make
+    local ARG=
+    for ARG in $@ ; do
+        if [ "$ARG" = mka ]; then
+            MM_MAKE=mka
+        fi
+    done
     # If we're sitting in the root of the build tree, just do a
     # normal make.
     if [ -f build/core/envsetup.mk -a -f Makefile ]; then
-        make $@
+        $MM_MAKE $@
     else
         # Find the closest Android.mk file.
         T=$(gettop)
@@ -660,13 +687,14 @@ function mm()
               MODULES=all_modules
               ARGS=$@
             fi
-            ONE_SHOT_MAKEFILE=$M make -C $T -f build/core/main.mk $MODULES $ARGS
+            ONE_SHOT_MAKEFILE=$M $MM_MAKE -C $T -f build/core/main.mk $MODULES $ARGS
         fi
     fi
 }
 
 function mmm()
 {
+    local MMM_MAKE=make
     T=$(gettop)
     if [ "$T" ]; then
         local MAKEFILE=
@@ -695,6 +723,7 @@ function mmm()
                 MAKEFILE="$MAKEFILE $MFILE"
             else
                 case $DIR in
+                  mka) MMM_MAKE=mka;;
                   showcommands | snod | dist | incrementaljavac) ARGS="$ARGS $DIR";;
                   GET-INSTALL-PATH) GET_INSTALL_PATH=$DIR;;
                   *) echo "No Android.mk in $DIR."; return 1;;
@@ -705,7 +734,7 @@ function mmm()
           ARGS=$GET_INSTALL_PATH
           MODULES=
         fi
-        ONE_SHOT_MAKEFILE="$MAKEFILE" make -C $T -f build/core/main.mk $DASH_ARGS $MODULES $ARGS
+        ONE_SHOT_MAKEFILE="$MAKEFILE" $MMM_MAKE -C $T -f build/core/main.mk $DASH_ARGS $MODULES $ARGS
     else
         echo "Couldn't locate the top of the tree.  Try setting TOP."
     fi
@@ -767,6 +796,15 @@ function croot()
         \cd $(gettop)
     else
         echo "Couldn't locate the top of the tree.  Try setting TOP."
+    fi
+}
+
+function cout()
+{
+    if [  "$OUT" ]; then
+        cd $OUT
+    else
+        echo "Couldn't locate out directory.  Try setting OUT."
     fi
 }
 
@@ -1295,6 +1333,46 @@ function godir () {
     \cd $T/$pathname
 }
 
+function mka() {
+    case `uname -s` in
+        Darwin)
+            make -j `sysctl hw.ncpu|cut -d" " -f2` "$@"
+            ;;
+        *)
+            schedtool -B -n 1 -e ionice -n 1 make -j$(cat /proc/cpuinfo | grep "^processor" | wc -l) "$@"
+            ;;
+    esac
+}
+
+function reposync() {
+    case `uname -s` in
+        Darwin)
+            repo sync -j 8 "$@"
+            ;;
+        *)
+            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -j 8 "$@"
+            ;;
+    esac
+}
+
+function fixup_common_out_dir() {
+    common_out_dir=$(get_build_var OUT_DIR)/target/common
+    target_device=$(get_build_var TARGET_DEVICE)
+    if [ ! -z $CM_FIXUP_COMMON_OUT ]; then
+        if [ -d ${common_out_dir} ] && [ ! -L ${common_out_dir} ]; then
+            mv ${common_out_dir} ${common_out_dir}-${target_device}
+            ln -s ${common_out_dir}-${target_device} ${common_out_dir}
+        else
+            [ -L ${common_out_dir} ] && rm ${common_out_dir}
+            mkdir -p ${common_out_dir}-${target_device}
+            ln -s ${common_out_dir}-${target_device} ${common_out_dir}
+        fi
+    else
+        [ -L ${common_out_dir} ] && rm ${common_out_dir}
+        mkdir -p ${common_out_dir}
+    fi
+}
+
 # Force JAVA_HOME to point to java 1.6 if it isn't already set
 function set_java_home() {
     if [ ! "$JAVA_HOME" ]; then
@@ -1333,12 +1411,24 @@ if [ "x$SHELL" != "x/bin/bash" ]; then
 fi
 
 # Execute the contents of any vendorsetup.sh files we can find.
-for f in `test -d device && find device -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null` \
-         `test -d vendor && find vendor -maxdepth 4 -name 'vendorsetup.sh' 2> /dev/null`
+for f in `/bin/ls vendor/*/vendorsetup.sh vendor/*/*/vendorsetup.sh device/*/*/vendorsetup.sh 2> /dev/null`
 do
     echo "including $f"
     . $f
 done
 unset f
 
-addcompletions
+# Add completions
+check_bash_version && {
+    dirs="sdk/bash_completion vendor/liquid/bash_completion"
+    for dir in $dirs; do
+    if [ -d ${dir} ]; then
+        for f in `/bin/ls ${dir}/[a-z]*.bash 2> /dev/null`; do
+            echo "including $f"
+            . $f
+        done
+    fi
+    done
+}
+
+export ANDROID_BUILD_TOP=$(gettop)

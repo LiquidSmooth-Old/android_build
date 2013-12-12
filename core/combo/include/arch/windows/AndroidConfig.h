@@ -15,7 +15,7 @@
  */
 
 /*
- * Android config -- "CYGWIN_NT-5.1".  
+ * Android config -- "CYGWIN_NT-5.1".
  *
  * Cygwin has pthreads, but GDB seems to get confused if you use it to
  * create threads.  By "confused", I mean it freezes up the first time the

@@ -140,15 +140,13 @@ def SetupToolsPath():
     uname = "darwin-x86"
   elif uname == "Linux":
     uname = "linux-x86"
-  gcc_version = os.environ["TARGET_GCC_VERSION"]
-  prefix = "./prebuilts/gcc/" + uname + "/arm/arm-linux-androideabi-" + \
-           gcc_version + "/bin/"
+  prefix = "./prebuilts/gcc/" + uname + "/arm/arm-linux-androideabi-$(TARGET_GCC_VERSION_AND)/bin/"
   addr2line_cmd = prefix + "arm-linux-androideabi-addr2line"
 
   if (not os.path.exists(addr2line_cmd)):
     try:
       prefix = os.environ['ANDROID_BUILD_TOP'] + "/prebuilts/gcc/" + \
-               uname + "/arm/arm-linux-androideabi-" + gcc_version + "/bin/"
+               uname + "/arm/arm-linux-androideabi-$(TARGET_GCC_VERSION_AND)/bin/"
     except:
       prefix = "";
 
