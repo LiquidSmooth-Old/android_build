@@ -1382,10 +1382,10 @@ function mka() {
 function reposync() {
     case `uname -s` in
         Darwin)
-            repo sync -j 8 "$@"
+            repo sync -j 8 "$@" > /dev/null
             ;;
         *)
-            schedtool -B -n 1 -e ionice -n 1 `which repo` sync -j 8 "$@"
+            schedtool -B -n 1 -e ionice -n 1 repo sync -j 8 "$@" > /dev/null
             ;;
     esac
 }
