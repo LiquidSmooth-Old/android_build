@@ -468,6 +468,9 @@ endif
 ifeq ($(MAKECMDGOALS),magic)
 dont_bother := true
 endif
+ifeq ($(MAKECMDGOALS),dirty)
+dont_bother := true
+endif
 ifeq ($(MAKECMDGOALS),appclean)
 dont_bother := true
 endif
@@ -1109,6 +1112,14 @@ novo:
 magic:
 	@rm -rf $(OUT_DIR)/target/product/*
 	@echo -e ${CL_GRN}"Target/Product directory removed."${CL_RST}	
+
+# Clears out zip and build.prop
+.PHONY: dirty
+dirty:
+	@rm -rf $(OUT_DIR)/target/product/*/system/build.prop
+	@rm -rf $(OUT_DIR)/target/product/*/*.zip
+	@rm -rf $(OUT_DIR)/target/product/*/*.md5sum
+	@echo -e ${CL_GRN}"build.prop and zip files erased"${CL_RST}	
 
 # Clears out all apks
 .PHONY: appclean
