@@ -140,6 +140,21 @@ function setpaths()
     export TARGET_GCC_VERSION_AND=$targetgccversionand
 
     # The gcc toolchain does not exists for windows/cygwin. In this case, do not reference it.
+    if [ "$LINARO_GCC_VERSION" = "4.7" ]; then
+    export ANDROID_EABI_TOOLCHAIN=
+    local ARCH=$(get_build_var TARGET_ARCH)
+    case $ARCH in
+        x86) toolchaindir=x86/i686-linux-android-$targetgccversionand/bin
+            ;;
+        arm) toolchaindir=arm/LINARO/bin
+            ;;
+        mips) toolchaindir=mips/mipsel-linux-android-$targetgccversionand/bin
+            ;;
+        *)
+            echo "Can't find toolchain for unknown architecture: $ARCH"
+            toolchaindir=xxxxxxxxx
+            ;;
+    esac
     if [ "$LINARO_GCC_VERSION" = "4.8" ]; then
     export ANDROID_EABI_TOOLCHAIN=
     local ARCH=$(get_build_var TARGET_ARCH)
@@ -178,6 +193,9 @@ function setpaths()
     unset ARM_EABI_TOOLCHAIN ARM_EABI_TOOLCHAIN_PATH
     case $ARCH in
         arm)
+    if [ "$LINARO_GCC_VERSION" = "4.7" ]; then
+            toolchaindir=arm/Lk/bin
+            
     if [ "$LINARO_GCC_VERSION" = "4.8" ]; then
             toolchaindir=arm/arm-eabi-$targetgccversionarm/bin
     else    
@@ -870,18 +888,18 @@ function qpid() {
         append='$'
         shift
     elif [ "$1" = "--help" -o "$1" = "-h" ]; then
-		echo "usage: qpid [[--exact] <process name|pid>"
-		return 255
-	fi
+                echo "usage: qpid [[--exact] <process name|pid>"
+                return 255
+        fi
 
     local EXE="$1"
     if [ "$EXE" ] ; then
-		qpid | \grep "$prepend$EXE$append"
-	else
-		adb shell ps \
-			| tr -d '\r' \
-			| sed -e 1d -e 's/^[^ ]* *\([0-9]*\).* \([^ ]*\)$/\1 \2/'
-	fi
+                qpid | \grep "$prepend$EXE$append"
+        else
+                adb shell ps \
+                        | tr -d '\r' \
+                        | sed -e 1d -e 's/^[^ ]* *\([0-9]*\).* \([^ ]*\)$/\1 \2/'
+        fi
 }
 
 function pid()
@@ -902,7 +920,7 @@ function pid()
         echo "$PID"
     else
         echo "usage: pid [--exact] <process name>"
-		return 255
+                return 255
     fi
 }
 
