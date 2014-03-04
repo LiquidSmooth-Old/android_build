@@ -1412,6 +1412,7 @@ ifeq ($(TARGET_UNIFIED_DEVICE),)
     $(INTERNAL_OTA_PACKAGE_TARGET): override_prop := false
 else
     $(INTERNAL_OTA_PACKAGE_TARGET): override_prop := true
+endif
 
 ifeq ($(LS_BUILD),true)
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
