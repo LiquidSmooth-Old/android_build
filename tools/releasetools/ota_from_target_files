@@ -456,8 +456,9 @@ def WriteFullOTAPackage(input_zip, output_zip):
   device_specific.FullOTA_Assertions()
   device_specific.FullOTA_InstallBegin()
 
-  if OPTIONS.backuptool:
-    script.RunBackup("backup")
+  script.Mount("/system")
+  script.RunBackup("backup")
+  script.Unmount("/system")
 
   script.ShowProgress(0.5, 0)
 
@@ -504,9 +505,9 @@ def WriteFullOTAPackage(input_zip, output_zip):
   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
   script.ShowProgress(0.2, 0)
 
-  if OPTIONS.backuptool:
-    script.ShowProgress(0.2, 10)
-    script.RunBackup("restore")
+
+  script.ShowProgress(0.2, 10)
+  script.RunBackup("restore")
 
   script.ShowProgress(0.2, 10)
   script.Print("Flashing Boot Image...")
