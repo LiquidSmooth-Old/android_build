@@ -81,7 +81,7 @@ ifneq ($(USE_CCACHE),)
   # We don't really use system headers much so the rootdir is
   # fine; ensures these paths are relative for all Android trees
   # on a workstation.
-  export CCACHE_BASEDIR := /
+  export CCACHE_BASEDIR := $(ANDROID_BUILD_TOP)
 
   # It has been shown that ccache 3.x using direct mode can be several times
   # faster than using the current ccache 2.4 that is used by default
