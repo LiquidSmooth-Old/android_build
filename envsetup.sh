@@ -643,8 +643,16 @@ function lunch()
 
     echo
 
+    if [[ $USE_PREBUILT_CHROMIUM -eq 1 ]]; then
+        chromium_prebuilt
+    else
+        # Unset flag in case user opts out later on
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=""
+    fi
+
     set_stuff_for_environment
     printconfig
+
 }
 
 # Tab completion for lunch.
@@ -1994,6 +2002,30 @@ function pez {
     return $retval
 }
 
+function chromium_prebuilt() {
+    T=$(gettop)
+    export TARGET_DEVICE=$(get_build_var TARGET_DEVICE)
+    hash=$T/prebuilts/chromium/$TARGET_DEVICE/hash.txt
+    libsCheck=$T/prebuilts/chromium/$TARGET_DEVICE/lib/libwebviewchromium.so
+    appCheck=$T/prebuilts/chromium/$TARGET_DEVICE/app/webview
+    device_target=$T/prebuilts/chromium/$TARGET_DEVICE/
+
+    # Colors
+    txtbld=$(tput bold)
+    bldblu=${txtbld}$(tput setaf 4)
+    bldgrn=${txtbld}$(tput setaf 2)
+
+    if [ -r $hash ] && [ $(git --git-dir=$T/external/chromium_org/.git --work-tree=$T/external/chromium_org rev-parse --verify HEAD) == $(cat $hash) ] && [ -f $libsCheck ] && [ -d $appCheck ]; then
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=yes
+        echo -e ${bldblu}"Prebuilt Chromium is up-to-date: ${bldgrn}Will be used for build"${txtrst}
+    else
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=no
+        echo -e ${bldblu}"Prebuilt Chromium out-of-date or not found: ${bldgrn}Will build from source"${txtrst}
+        rm -rfv $device_target
+        echo ""
+    fi
+}
+
 function get_make_command()
 {
   echo command make
@@ -2026,8 +2058,6 @@ function make()
     echo
     return $ret
 }
-
-
 
 if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
