@@ -1689,6 +1689,12 @@ ifeq ($(LIQUID_CHANGELOG),true)
 # Generate changelog
 	$(hide) ./vendor/liquid/tools/changelog
 	$(hide) mv $(PRODUCT_OUT)/Changelog.txt $(PRODUCT_OUT)/$(LIQUID_VERSION)-$(TARGET_PRODUCT).txt
+
+ifeq ($(USE_PREBUILT_CHROMIUM),1)
+ifneq ($(PRODUCT_PREBUILT_WEBVIEWCHROMIUM),yes)
+	@echo "Running Chromium prebuilt setup script..."
+	$(hide) . $(TOPDIR)vendor/bliss/utils/chromium_prebuilt.sh $(TOP)
+endif
 endif
 
 check_liquid:
