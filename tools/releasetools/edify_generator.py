@@ -230,14 +230,8 @@ class EdifyGenerator(object):
             'write_raw_image("/tmp/boot.img", "%(device)s");' % args
             % args)
       elif partition_type == "EMMC":
-        self.script.append('package_extract_dir("system/extras/tools", "/tmp/f2fs/tools/");')
-        self.script.append('set_perm_recursive(0, 0, 0755, 0755, "/tmp/f2fs/tools/");')
-        self.script.append('package_extract_dir("system/extras/fstab", "/tmp/f2fs/fstab/");')
-        self.script.append('package_extract_file("boot.img", "/tmp/f2fs/boot.img");')
-        self.script.append('ui_print("Running script to modify and flash boot.img...");')
-        self.script.append('run_program("/tmp/f2fs/tools/repack-and-flash.sh");')
-        self.script.append('ui_print("Cleaning up...");')
-        self.script.append('delete("/tmp/f2fs");')
+        self.script.append(
+            'package_extract_file("%(fn)s", "%(device)s");' % args)
       elif partition_type == "BML":
 	        self.script.append(
             ('assert(package_extract_file("%(fn)s", "/tmp/%(device)s.img"),\n'
