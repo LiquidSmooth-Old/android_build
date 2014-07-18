@@ -643,8 +643,18 @@ function lunch()
 
     echo
 
+    if [[ $USE_PREBUILT_CHROMIUM -eq 1 ]]; then
+        chromium_prebuilt
+    else
+        # Unset flag in case user opts out later on
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=""
+    fi
+
+    fixup_common_out_dir
+
     set_stuff_for_environment
     printconfig
+
 }
 
 # Tab completion for lunch.
@@ -1980,6 +1990,23 @@ function repopick() {
     $T/build/tools/repopick.py $@
 }
 
+function fixup_common_out_dir() {
+    common_out_dir=$(get_build_var OUT_DIR)/target/common
+    target_device=$(get_build_var TARGET_DEVICE)
+    if [ ! -z $CM_FIXUP_COMMON_OUT ]; then
+        if [ -d ${common_out_dir} ] && [ ! -L ${common_out_dir} ]; then
+            mv ${common_out_dir} ${common_out_dir}-${target_device}
+            ln -s ${common_out_dir}-${target_device} ${common_out_dir}
+        else
+            [ -L ${common_out_dir} ] && rm ${common_out_dir}
+            mkdir -p ${common_out_dir}-${target_device}
+            ln -s ${common_out_dir}-${target_device} ${common_out_dir}
+        fi
+    else
+        [ -L ${common_out_dir} ] && rm ${common_out_dir}
+        mkdir -p ${common_out_dir}
+    fi
+}
 
 # Print colored exit condition
 function pez {
@@ -1992,6 +2019,31 @@ function pez {
         echo -e "\e[0;32mSUCCESS\e[00m"
     fi
     return $retval
+}
+
+function chromium_prebuilt() {
+    T=$(gettop)
+    export TARGET_DEVICE=$(get_build_var TARGET_DEVICE)
+    hash=$T/prebuilts/chromium/$TARGET_DEVICE/hash.txt
+    libsCheck=$T/prebuilts/chromium/$TARGET_DEVICE/lib/libwebviewchromium.so
+    appCheck=$T/prebuilts/chromium/$TARGET_DEVICE/app/webview
+    device_target=$T/prebuilts/chromium/$TARGET_DEVICE/
+
+    # Colors
+    txtbld=$(tput bold)
+    bldblu=${txtbld}$(tput setaf 4)
+    bldgrn=${txtbld}$(tput setaf 2)
+
+    if [ -r $hash ] && [ $(git --git-dir=$T/external/chromium_org/.git --work-tree=$T/external/chromium_org rev-parse --verify HEAD) == $(cat $hash) ] && [ -f $libsCheck ] && [ -d $appCheck ]; then
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=yes
+        echo -e ${bldblu}"Prebuilt Chromium is up-to-date: ${bldgrn}Will be used for build"${txtrst}
+    else
+        export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=no
+        rm -rfv $device_target
+        echo ""
+        echo -e ${bldblu}"Prebuilt Chromium out-of-date or not found: ${bldgrn}Will build from source"${txtrst}
+        echo ""
+    fi
 }
 
 function get_make_command()
@@ -2026,8 +2078,6 @@ function make()
     echo
     return $ret
 }
-
-
 
 if [ "x$SHELL" != "x/bin/bash" ]; then
     case `ps -o command -p $$` in
