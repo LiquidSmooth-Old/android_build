@@ -177,7 +177,7 @@ class EdifyGenerator(object):
   def FormatPartition(self, partition):
     """Format the given partition, specified by its mount point (eg,
     "/system")."""
-    self.script.append('package_extract_file("system/extras/tools/format-system.sh", "/tmp/format-system.sh");')
+    self.script.append('package_extract_file("system/extras/format-system.sh", "/tmp/format-system.sh");')
     self.script.append('set_perm(0, 0, 0777, "/tmp/format-system.sh");')
     self.script.append('run_program("/tmp/format-system.sh");')
 
