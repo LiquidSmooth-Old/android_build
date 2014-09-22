@@ -189,18 +189,21 @@ class EdifyGenerator(object):
   def FormatPartition(self, partition):
     """Format the given partition, specified by its mount point (eg,
     "/system")."""
-
-    reserve_size = 0
-    fstab = self.info.get("fstab", None)
-    if fstab:
-      p = fstab[partition]
-      if p.fs_type == 'f2fs':
-        self.script.append('run_program("/sbin/mkfs.f2fs", "%s");' %
-                           (p.device))
-      else:
-        self.script.append('format("%s", "%s", "%s", "%s", "%s");' %
-                           (p.fs_type, common.PARTITION_TYPES[p.fs_type],
-                            p.device, p.length, p.mount_point))
+    self.script.append('ifelse(mount("f2fs", "%s", "%s", "&s") == "t",' %
+                       (common.PARTITION_TYPES[p.fs_type],
+                        p.device, p.mount_point))
+    self.script.append('(')
+    self.script.append('ui_print("Formatting /system using f2fs");')
+    self.script.append('run_program("/sbin/mkfs.f2fs", "%s");' %
+                       (p.device))
+    self.script.append('),')
+    self.script.append('(')
+    self.script.append('ui_print("Formatting /system using ext4");')
+    self.script.append('format("%s", "%s", "%s", "%s", "%s");' %
+                       (p.fs_type, common.PARTITION_TYPES[p.fs_type],
+                        p.device, p.length, p.mount_point))
+    self.script.append(')')
+    self.script.append(');')
 
   def DeleteFiles(self, file_list):
     """Delete all files in file_list."""
