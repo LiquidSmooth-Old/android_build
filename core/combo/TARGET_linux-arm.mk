@@ -81,7 +81,7 @@ TARGET_arm_CFLAGS :=    -O3 \
                         -funswitch-loops \
                         -fno-tree-vectorize \
                         -fno-inline-functions \
-                        -Wstrict-aliasing=3 \
+                        -Wstrict-aliasing=2 \
                         -Werror=strict-aliasing \
                         -fgcse-after-reload \
                         -fno-ipa-cp-clone \
@@ -97,7 +97,7 @@ TARGET_thumb_CFLAGS :=  -mthumb \
                         -fno-tree-vectorize \
                         -fno-inline-functions \
                         -fno-unswitch-loops \
-                        -Wstrict-aliasing=3 \
+                        -Wstrict-aliasing=2 \
                         -Werror=strict-aliasing \
                         -fgcse-after-reload \
                         -fno-ipa-cp-clone \
@@ -191,7 +191,7 @@ TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden -fstrict-aliasing
 TARGET_RELEASE_CFLAGS += \
 			-DNDEBUG \
 			-g \
-			-Wstrict-aliasing=3 \
+			-Wstrict-aliasing=2 \
 			-Werror=strict-aliasing \
 			-fstrict-aliasing \
 			-fgcse-after-reload \
