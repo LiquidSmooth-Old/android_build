@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2006 The Android Open Source Project
+# Copyright (C) 2014 Łukasz "JustArchi" Domeradzki
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,7 +88,22 @@ TARGET_arm_CFLAGS :=    -O3 \
                         -fno-ipa-cp-clone \
                         -fno-vect-cost-model \
                         -Wno-error=unused-parameter \
-                        -Wno-error=unused-but-set-variable
+                        -Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-frename-registers \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
 
 # Modules can choose to compile some source as thumb.
 TARGET_thumb_CFLAGS :=  -mthumb \
@@ -103,7 +119,23 @@ TARGET_thumb_CFLAGS :=  -mthumb \
                         -fno-ipa-cp-clone \
                         -fno-vect-cost-model \
                         -Wno-error=unused-parameter \
-                        -Wno-error=unused-but-set-variable
+                        -Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-frename-registers \
+			-frerun-cse-after-loop \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
 
 # Turn off strict-aliasing if we're building an AOSP variant without the
 # patchset...
@@ -153,17 +185,6 @@ TARGET_GLOBAL_CFLAGS += \
 			-include $(android_config_h) \
 			-I $(dir $(android_config_h))
 
-# This warning causes dalvik not to build with gcc 4.6+ and -Werror.
-# We cannot turn it off blindly since the option is not available
-# in gcc-4.4.x.  We also want to disable sincos optimization globally
-# by turning off the builtin sin function.
-ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.% 4.10 4.10%, $(TARGET_GCC_VERSION_AND)),)
-ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.% 4.10 4.10%, $(TARGET_GCC_VERSION_ARM)),)
-TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fstrict-aliasing -fno-builtin-sin \
-			-fno-strict-volatile-bitfields
-endif
-endif
-
 # This is to avoid the dreaded warning compiler message:
 #   note: the mangling of 'va_list' has changed in GCC 4.4
 #
@@ -185,22 +206,57 @@ TARGET_GLOBAL_LDFLAGS += \
 
 TARGET_GLOBAL_CFLAGS += -mthumb-interwork -fstrict-aliasing
 
-TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden -fstrict-aliasing
+TARGET_GLOBAL_CPPFLAGS += \
+			-fvisibility-inlines-hidden \
+			-O3 \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-frename-registers \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=unused-parameter \
+			-Wno-error=unused-but-set-variable \
+			-Wno-error=maybe-uninitialized \
+			-Wstrict-aliasing=3
 
 # More flags/options can be added here
 TARGET_RELEASE_CFLAGS += \
+			-O3
 			-DNDEBUG \
 			-g \
-			-Wstrict-aliasing=3 \
-			-Werror=strict-aliasing \
-			-fstrict-aliasing \
 			-fgcse-after-reload \
 			-frerun-cse-after-loop \
 			-frename-registers \
 			-fno-ipa-cp-clone \
 			-fno-vect-cost-model \
 			-Wno-error=unused-parameter \
-			-Wno-error=unused-but-set-variable
+			-Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-fno-strict-aliasing \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
 
 libc_root := bionic/libc
 libm_root := bionic/libm
