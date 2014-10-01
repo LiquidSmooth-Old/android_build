@@ -166,6 +166,10 @@ endif
 TARGET_DEVICE_DIR := $(patsubst %/,%,$(dir $(board_config_mk)))
 board_config_mk :=
 
+# General entries for project pathmap.  Any entries listed here should
+# be device and hardware intedpendent.
+$(call set_project_variant_path,recovery,RECOVERY_VARIANT,bootable/recovery)
+
 # Perhaps we should move this block to build/core/Makefile,
 # once we don't have TARGET_NO_KERNEL reference in AndroidBoard.mk/Android.mk.
 ifneq ($(strip $(TARGET_NO_BOOTLOADER)),true)
