@@ -1,5 +1,6 @@
 #
 # Copyright (C) 2006 The Android Open Source Project
+# Copyright (C) 2014 Łukasz "JustArchi" Domeradzki
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,6 +76,36 @@ endif
 
 TARGET_NO_UNDEFINED_LDFLAGS := -Wl,--no-undefined
 
+ifeq ($(USE_ARCH_OPTIMIZATIONS),yes)
+TARGET_arm_CFLAGS :=    -O3 \
+                        -fomit-frame-pointer \
+                        -fstrict-aliasing \
+                        -funswitch-loops \
+                        -fno-tree-vectorize \
+                        -fno-inline-functions \
+                        -Wstrict-aliasing=3 \
+                        -Werror=strict-aliasing \
+                        -fgcse-after-reload \
+                        -fno-ipa-cp-clone \
+                        -fno-vect-cost-model \
+                        -Wno-error=unused-parameter \
+                        -Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-frename-registers \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
+else
 TARGET_arm_CFLAGS :=    -O3 \
                         -fomit-frame-pointer \
                         -fstrict-aliasing \
@@ -88,8 +119,41 @@ TARGET_arm_CFLAGS :=    -O3 \
                         -fno-vect-cost-model \
                         -Wno-error=unused-parameter \
                         -Wno-error=unused-but-set-variable
+endif
 
 # Modules can choose to compile some source as thumb.
+ifeq ($(USE_ARCH_OPTIMIZATIONS),yes)
+TARGET_thumb_CFLAGS :=  -mthumb \
+                        -Os \
+                        -fomit-frame-pointer \
+                        -fstrict-aliasing \
+                        -fno-tree-vectorize \
+                        -fno-inline-functions \
+                        -fno-unswitch-loops \
+                        -Wstrict-aliasing=3 \
+                        -Werror=strict-aliasing \
+                        -fgcse-after-reload \
+                        -fno-ipa-cp-clone \
+                        -fno-vect-cost-model \
+                        -Wno-error=unused-parameter \
+                        -Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-frename-registers \
+			-frerun-cse-after-loop \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
+else
 TARGET_thumb_CFLAGS :=  -mthumb \
                         -Os \
                         -fomit-frame-pointer \
@@ -104,6 +168,7 @@ TARGET_thumb_CFLAGS :=  -mthumb \
                         -fno-vect-cost-model \
                         -Wno-error=unused-parameter \
                         -Wno-error=unused-but-set-variable
+endif
 
 # Turn off strict-aliasing if we're building an AOSP variant without the
 # patchset...
@@ -153,6 +218,8 @@ TARGET_GLOBAL_CFLAGS += \
 			-include $(android_config_h) \
 			-I $(dir $(android_config_h))
 
+ifeq ($(USE_ARCH_OPTIMIZATIONS),yes)
+else
 # This warning causes dalvik not to build with gcc 4.6+ and -Werror.
 # We cannot turn it off blindly since the option is not available
 # in gcc-4.4.x.  We also want to disable sincos optimization globally
@@ -161,6 +228,7 @@ ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.% 4.10 4.10%, $(TARGET_GCC
 ifneq ($(filter 4.6 4.6.% 4.7 4.7.% 4.8 4.8.% 4.9 4.9.% 4.10 4.10%, $(TARGET_GCC_VERSION_ARM)),)
 TARGET_GLOBAL_CFLAGS += -Wno-unused-but-set-variable -fstrict-aliasing -fno-builtin-sin \
 			-fno-strict-volatile-bitfields
+endif
 endif
 endif
 
@@ -185,9 +253,63 @@ TARGET_GLOBAL_LDFLAGS += \
 
 TARGET_GLOBAL_CFLAGS += -mthumb-interwork -fstrict-aliasing
 
+ifeq ($(USE_ARCH_OPTIMIZATIONS),yes)
+TARGET_GLOBAL_CPPFLAGS += \
+			-fvisibility-inlines-hidden \
+			-O3 \
+			-DNDEBUG \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-frename-registers \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=unused-parameter \
+			-Wno-error=unused-but-set-variable \
+			-Wno-error=maybe-uninitialized \
+			-Wstrict-aliasing=3
+else
 TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden -fstrict-aliasing
+endif
 
 # More flags/options can be added here
+ifeq ($(USE_ARCH_OPTIMIZATIONS),yes)
+TARGET_RELEASE_CFLAGS += \
+			-O3
+			-DNDEBUG \
+			-g \
+			-fgcse-after-reload \
+			-frerun-cse-after-loop \
+			-frename-registers \
+			-fno-ipa-cp-clone \
+			-fno-vect-cost-model \
+			-Wno-error=unused-parameter \
+			-Wno-error=unused-but-set-variable \
+			-DNDEBUG \
+			-fno-strict-aliasing \
+			-funsafe-loop-optimizations \
+			-fsection-anchors \
+			-fivopts \
+			-ftree-loop-im \
+			-ftree-loop-ivcanon \
+			-ffunction-sections \
+			-fdata-sections \
+			-funswitch-loops \
+			-fomit-frame-pointer \
+			-fgcse-sm \
+			-fgcse-las \
+			-fweb \
+			-ftracer \
+			-Wno-error=maybe-uninitialized
+else
 TARGET_RELEASE_CFLAGS += \
 			-DNDEBUG \
 			-g \
@@ -201,6 +323,7 @@ TARGET_RELEASE_CFLAGS += \
 			-fno-vect-cost-model \
 			-Wno-error=unused-parameter \
 			-Wno-error=unused-but-set-variable
+endif
 
 libc_root := bionic/libc
 libm_root := bionic/libm
