@@ -20,6 +20,7 @@ from __future__ import print_function
 import json
 import sys
 import os
+import re
 from xml.etree import ElementTree as ES
 # Use the urllib importer from the Cyanogenmod roomservice
 try:
@@ -54,8 +55,9 @@ def check_repo_exists(git_data):
 
 # Note that this can only be done 5 times per minute
 def search_github_for_device(device):
+    git_device = '+'.join(re.findall('[a-z]+|[\d]+',  device))
     git_search_url = "https://api.github.com/search/repositories" \
-                     "?q=%40{}+android_device+{}+fork:true".format(android_team, device)
+                     "?q=%40{}+android_device+{}+fork:true".format(android_team, git_device)
     git_req = urllib.request.Request(git_search_url)
     # this api is a preview at the moment. accept the custom media type
     git_req.add_header('Accept', 'application/vnd.github.preview')
