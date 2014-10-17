@@ -50,6 +50,11 @@ endif
 CLANG_CONFIG_EXTRA_CFLAGS += \
   -Werror=int-conversion
 
+# Workaround for ccache with clang.
+# See http://petereisentraut.blogspot.com/2011/05/ccache-and-clang.html.
+CLANG_CONFIG_EXTRA_CFLAGS += \
+  -Wno-unused-command-line-argument
+
 CLANG_CONFIG_UNKNOWN_CFLAGS := \
   -funswitch-loops \
   -fno-tree-sra \
