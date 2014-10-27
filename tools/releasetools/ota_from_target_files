@@ -519,14 +519,14 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
   script.Print("          <%%% Liquid-Kitkat %%%>             ")
   script.Print("         <%%% By LiquidSmooth %%%>            ")
   script.Print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
+  script.Print("Mounting System...")
+  script.Mount("/system")
   script.Print("Erasing System...")
 
   if "selinux_fc" in OPTIONS.info_dict:
     WritePolicyConfig(OPTIONS.info_dict["selinux_fc"], output_zip)
 
   script.FormatPartition("/system")
-  script.Print("Mounting System...")
-  script.Mount("/system")
   script.ShowProgress(0.5, 40)
   script.Print("Installing System...")
   script.UnpackPackageDir("system", "/system")
