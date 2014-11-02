@@ -167,7 +167,7 @@ function setpaths()
                  ARM_EABI_TOOLCHAIN_PATH=":$gccprebuiltdir/$toolchaindir"
             fi
             ;;
-        mips) toolchaindir=mips/mips-eabi-4.4.3/bin
+        mips) toolchaindir=mips/mips-eabi-$targetgccversionarm/bin
             ;;
         *)
             # No need to set ARM_EABI_TOOLCHAIN for other ARCHs
