@@ -50,3 +50,4 @@ arch_variant_ldflags := \
 endif
 endif
 endif
+endif
