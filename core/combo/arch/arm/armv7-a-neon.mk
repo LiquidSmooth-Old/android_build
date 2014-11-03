@@ -14,9 +14,6 @@ ifeq ($(strip $(TARGET_CPU_VARIANT)),cortex-a9)
 else
 ifeq ($(strip $(TARGET_CPU_VARIANT)),cortex-a8)
 	arch_variant_cflags := -mcpu=cortex-a8 -mfpu=neon
-ifeq ($(USE_ARCH_OPTIMIZATIONS),true)
-	arch_variant_ldflags := -Wl,--fix-cortex-a8
-endif
 else
 ifeq ($(strip $(TARGET_CPU_VARIANT)),cortex-a7)
 	arch_variant_cflags := -mcpu=cortex-a7 -mfpu=neon-vfpv4
@@ -27,10 +24,9 @@ else
 ifeq ($(strip $(TARGET_CPU_VARIANT)),scorpion)
 	arch_variant_cflags := -mcpu=cortex-a8 -mfpu=neon
 else
-ifeq ($(strip $(TARGET_CPU_VARIANT)),cortex-a7)
-	arch_variant_cflags := -mcpu=cortex-a7
-else
 	arch_variant_cflags := -march=armv7-a -mfpu=neon
+endif
+endif
 endif
 endif
 endif
@@ -39,16 +35,5 @@ endif
 arch_variant_cflags += \
     -mfloat-abi=softfp
 
-ifeq ($(USE_ARCH_OPTIMIZATIONS),true)
-else
-ifneq (,$(findstring cpu=cortex-a9,$(TARGET_EXTRA_CFLAGS)))
-arch_variant_ldflags := \
-	-Wl,--no-fix-cortex-a8
-else
 arch_variant_ldflags := \
 	-Wl,--fix-cortex-a8
-endif
-endif
-endif
-endif
-endif
