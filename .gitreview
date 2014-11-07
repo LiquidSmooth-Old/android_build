@@ -1,5 +1,0 @@
-[gerrit]
-host=gerrit.liquidsmooth.net
-port=29418
-project=LiquidSmooth/android_build.git
-defaultbranch=kitkat

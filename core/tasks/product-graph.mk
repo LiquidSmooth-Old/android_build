@@ -70,7 +70,7 @@ $(products_graph): PRIVATE_PRODUCTS := $(really_all_products)
 $(products_graph): PRIVATE_PRODUCTS_FILTER := $(products_list)
 
 $(products_graph): $(this_makefile)
-	@echo -e ${CL_GRN}"Product graph DOT:"${CL_RST}" $@ for $(PRIVATE_PRODUCTS_FILTER)"
+	@echo -e ${CL_GRN}"Product graph DOT:"${CL_RST}" $@" for $(PRIVATE_PRODUCTS_FILTER)
 	$(hide) echo 'digraph {' > $@.in
 	$(hide) echo 'graph [ ratio=.5 ];' >> $@.in
 	$(hide) $(foreach p,$(PRIVATE_PRODUCTS), \
@@ -105,7 +105,6 @@ $(OUT_DIR)/products/$(strip $(1)).txt: $(this_makefile)
 	$(hide) echo 'PRODUCT_DEFAULT_PROPERTY_OVERRIDES=$$(PRODUCTS.$(strip $(1)).PRODUCT_DEFAULT_PROPERTY_OVERRIDES)' >> $$@
 	$(hide) echo 'PRODUCT_CHARACTERISTICS=$$(PRODUCTS.$(strip $(1)).PRODUCT_CHARACTERISTICS)' >> $$@
 	$(hide) echo 'PRODUCT_COPY_FILES=$$(PRODUCTS.$(strip $(1)).PRODUCT_COPY_FILES)' >> $$@
-	$(hide) echo 'PRODUCT_COPY_FILES_OVERRIDES=$$(PRODUCTS.$(strip $(1)).PRODUCT_COPY_FILES_OVERRIDES)' >> $$@
 	$(hide) echo 'PRODUCT_OTA_PUBLIC_KEYS=$$(PRODUCTS.$(strip $(1)).PRODUCT_OTA_PUBLIC_KEYS)' >> $$@
 	$(hide) echo 'PRODUCT_EXTRA_RECOVERY_KEYS=$$(PRODUCTS.$(strip $(1)).PRODUCT_EXTRA_RECOVERY_KEYS)' >> $$@
 	$(hide) echo 'PRODUCT_PACKAGE_OVERLAYS=$$(PRODUCTS.$(strip $(1)).PRODUCT_PACKAGE_OVERLAYS)' >> $$@
@@ -141,7 +140,7 @@ $(products_pdf): $(products_graph)
 	dot -Tpdf -Nshape=box -o $@ $<
 
 $(products_svg): $(products_graph) $(product_debug_files)
-	@echo -e ${CL_GRN}"Product graph SVG:"${CL_RST}" $@"
+	@echo Product graph SVG: $@
 	dot -Tsvg -Nshape=box -o $@ $<
 
 product-graph: $(products_pdf) $(products_svg)

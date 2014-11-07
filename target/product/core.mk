@@ -22,15 +22,32 @@
 PRODUCT_PACKAGES += \
     BasicDreams \
     Browser \
+    Calculator \
+    Calendar \
+    CalendarProvider \
+    CaptivePortalLogin \
+    CertInstaller \
     Contacts \
+    DeskClock \
     DocumentsUI \
     DownloadProviderUi \
     ExternalStorageProvider \
+    FusedLocation \
+    InputDevices \
     KeyChain \
+    Keyguard \
+    LatinIME \
+    ManagedProvisioning \
     PicoTts \
     PacProcessor \
+    libpac \
+    PrintSpooler \
     ProxyHandler \
+    Settings \
     SharedStorageBackup \
-    VpnDialogs
+    Telecom \
+    TeleService \
+    VpnDialogs \
+    MmsService
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_base.mk)

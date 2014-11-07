@@ -37,6 +37,24 @@
  * comments.
  */
 
+/* MingW doesn't define __BEGIN_DECLS / __END_DECLS. */
+
+#ifndef __BEGIN_DECLS
+#  ifdef __cplusplus
+#    define __BEGIN_DECLS extern "C" {
+#  else
+#    define __BEGIN_DECLS
+#  endif
+#endif
+
+#ifndef __END_DECLS
+#  ifdef __cplusplus
+#    define __END_DECLS }
+#  else
+#    define __END_DECLS
+#  endif
+#endif
+
 /*
  * Threading model.  Choose one:
  *
@@ -63,13 +81,6 @@
 #else
 #  define HAVE_WIN32_PROC
 #endif
-
-/*
- * Process out-of-memory adjustment.  Set if running on Linux,
- * where we can write to /proc/<pid>/oom_adj to modify the out-of-memory
- * badness adjustment.
- */
-/* #define HAVE_OOM_ADJ */
 
 /*
  * IPC model.  Choose one:

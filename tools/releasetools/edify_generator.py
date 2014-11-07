@@ -68,16 +68,40 @@ class EdifyGenerator(object):
     with temporary=True) to this one."""
     self.script.extend(other.script)
 
+  def AssertOemProperty(self, name, value):
+    """Assert that a property on the OEM paritition matches a value."""
+    if not name:
+      raise ValueError("must specify an OEM property")
+    if not value:
+      raise ValueError("must specify the OEM value")
+    cmd = ('file_getprop("/oem/oem.prop", "%s") == "%s" || '
+           'abort("This package expects the value \\"%s\\"  for '
+           '\\"%s\\" on the OEM partition; '
+           'this has value \\"" + file_getprop("/oem/oem.prop") + "\\".");'
+           ) % (name, value, name, value)
+    self.script.append(cmd)
+
   def AssertSomeFingerprint(self, *fp):
-    """Assert that the current system build fingerprint is one of *fp."""
+    """Assert that the current recovery build fingerprint is one of *fp."""
     if not fp:
       raise ValueError("must specify some fingerprints")
     cmd = (
-           ' ||\n    '.join([('file_getprop("/system/build.prop", '
-                         '"ro.build.fingerprint") == "%s"')
+           ' ||\n    '.join([('getprop("ro.build.fingerprint") == "%s"')
                         % i for i in fp]) +
            ' ||\n    abort("Package expects build fingerprint of %s; this '
            'device has " + getprop("ro.build.fingerprint") + ".");'
+           ) % (" or ".join(fp),)
+    self.script.append(cmd)
+
+  def AssertSomeThumbprint(self, *fp):
+    """Assert that the current recovery build thumbprint is one of *fp."""
+    if not fp:
+      raise ValueError("must specify some thumbprints")
+    cmd = (
+           ' ||\n    '.join([('getprop("ro.build.thumbprint") == "%s"')
+                        % i for i in fp]) +
+           ' ||\n    abort("Package expects build thumbprint of %s; this '
+           'device has " + getprop("ro.build.thumbprint") + ".");'
            ) % (" or ".join(fp),)
     self.script.append(cmd)
 
@@ -93,7 +117,7 @@ class EdifyGenerator(object):
   def AssertDevice(self, device):
     """Assert that the device identifier is the given string."""
     cmd = ('assert(' +
-           ' || \0'.join(['getprop("ro.product.device") == "%s" || getprop("ro.build.product") == "%s"'
+           ' || \0'.join(['getprop("ro.product.device") == "%s" || getprop ("ro.build.product") == "%s"'
                          % (i, i) for i in device.split(",")]) +
            ');')
     self.script.append(self._WordWrap(cmd))
@@ -107,6 +131,8 @@ class EdifyGenerator(object):
     self.script.append(self._WordWrap(cmd))
 
   def RunBackup(self, command):
+    return  # Stop this running until update to use metadata
+    self.script.append('package_extract_dir("system/addon.d", "/system/addon.d");')
     self.script.append('package_extract_file("system/bin/backuptool.sh", "/tmp/backuptool.sh");')
     self.script.append('package_extract_file("system/bin/backuptool.functions", "/tmp/backuptool.functions");')
     self.script.append('set_perm(0, 0, 0777, "/tmp/backuptool.sh");')
@@ -150,22 +176,29 @@ class EdifyGenerator(object):
     self.script.append(('apply_patch_space(%d) || abort("Not enough free space '
                         'on /system to apply patches.");') % (amount,))
 
-  def Mount(self, mount_point):
-    """Mount the partition with the given mount_point."""
+  def Mount(self, mount_point, mount_options_by_format=""):
+    """Mount the partition with the given mount_point.
+      mount_options_by_format:
+      [fs_type=option[,option]...[|fs_type=option[,option]...]...]
+      where option is optname[=optvalue]
+      E.g. ext4=barrier=1,nodelalloc,errors=panic|f2fs=errors=recover
+    """
     fstab = self.info.get("fstab", None)
     if fstab:
       p = fstab[mount_point]
-      if p.fs_type == 'f2fs':
-        self.script.append('run_program("/sbin/busybox", "mount", "%s");' %
-                           (p.mount_point))
-      else:
-        self.script.append('mount("%s", "%s", "%s", "%s");' %
-                           (p.fs_type, common.PARTITION_TYPES[p.fs_type],
-                            p.device, p.mount_point))
+      mount_dict = {}
+      if mount_options_by_format is not None:
+        for option in mount_options_by_format.split("|"):
+          if "=" in option:
+            key, value = option.split("=", 1)
+            mount_dict[key] = value
+      self.script.append('mount("%s", "%s", "%s", "%s", "%s");' %
+                         (p.fs_type, common.PARTITION_TYPES[p.fs_type],
+                          p.device, p.mount_point, mount_dict.get(p.fs_type, "")))
       self.mounts.add(p.mount_point)
 
   def Unmount(self, mount_point):
-    """Unmount the partiiton with the given mount_point."""
+    """Unmount the partition with the given mount_point."""
     if mount_point in self.mounts:
       self.mounts.remove(mount_point)
       self.script.append('unmount("%s");' % (mount_point,))
@@ -194,13 +227,18 @@ class EdifyGenerator(object):
     fstab = self.info.get("fstab", None)
     if fstab:
       p = fstab[partition]
-      if p.fs_type == 'f2fs':
-        self.script.append('run_program("/sbin/mkfs.f2fs", "%s");' %
-                           (p.device))
-      else:
-        self.script.append('format("%s", "%s", "%s", "%s", "%s");' %
-                           (p.fs_type, common.PARTITION_TYPES[p.fs_type],
-                            p.device, p.length, p.mount_point))
+      self.script.append('format("%s", "%s", "%s", "%s", "%s");' %
+                         (p.fs_type, common.PARTITION_TYPES[p.fs_type],
+                          p.device, p.length, p.mount_point))
+
+  def WipeBlockDevice(self, partition):
+    if partition not in ("/system", "/vendor"):
+      raise ValueError(("WipeBlockDevice doesn't work on %s\n") % (partition,))
+    fstab = self.info.get("fstab", None)
+    size = self.info.get(partition.lstrip("/") + "_size", None)
+    device = fstab[partition].device
+
+    self.script.append('wipe_block_device("%s", %s);' % (device, size))
 
   def DeleteFiles(self, file_list):
     """Delete all files in file_list."""
@@ -236,7 +274,7 @@ class EdifyGenerator(object):
     cmd = "".join(cmd)
     self.script.append(self._WordWrap(cmd))
 
-  def WriteRawImage(self, mount_point, fn):
+  def WriteRawImage(self, mount_point, fn, mapfn=None):
     """Write the given package file into the partition for the given
     mount point."""
 
@@ -247,17 +285,22 @@ class EdifyGenerator(object):
       args = {'device': p.device, 'fn': fn}
       if partition_type == "MTD":
         self.script.append(
-            'package_extract_file("%(fn)s", "/tmp/boot.img");'
+            'package_extract_file("%(fn)s", "/tmp/boot.img");\n'
             'write_raw_image("/tmp/boot.img", "%(device)s");' % args
             % args)
       elif partition_type == "EMMC":
-        self.script.append(
-            'package_extract_file("%(fn)s", "%(device)s");' % args)
+        if mapfn:
+          args["map"] = mapfn
+          self.script.append(
+              'package_extract_file("%(fn)s", "%(device)s", "%(map)s");' % args)
       elif partition_type == "BML":
-	        self.script.append(
+        self.script.append(
             ('assert(package_extract_file("%(fn)s", "/tmp/%(device)s.img"),\n'
              '       write_raw_image("/tmp/%(device)s.img", "%(device)s"),\n'
              '       delete("/tmp/%(device)s.img"));') % args)
+        else:
+          self.script.append(
+              'package_extract_file("%(fn)s", "%(device)s");' % args)
       else:
         raise ValueError("don't know how to write \"%s\" partitions" % (p.fs_type,))
 
@@ -304,6 +347,10 @@ class EdifyGenerator(object):
     """Append text verbatim to the output script."""
     self.script.append(extra)
 
+  def Unmount(self, mount_point):
+    self.script.append('unmount("%s");' % (mount_point,))
+    self.mounts.remove(mount_point);
+
   def UnmountAll(self):
     for p in sorted(self.mounts):
       self.script.append('unmount("%s");' % (p,))
@@ -323,6 +370,6 @@ class EdifyGenerator(object):
     if input_path is None:
       data = input_zip.read("OTA/bin/updater")
     else:
-      data = open(os.path.join(input_path, "updater")).read()
+      data = open(input_path, "rb").read()
     common.ZipWriteStr(output_zip, "META-INF/com/google/android/update-binary",
                        data, perms=0755)

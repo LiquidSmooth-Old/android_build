@@ -190,7 +190,7 @@ else
     # Read in all of the product definitions specified by the AndroidProducts.mk
     # files in the tree.
     all_product_configs := $(get-all-product-makefiles)
-  endif # LIQUID_BUILD
+  endif
 endif
 
 ifeq ($(LIQUID_BUILD),)
@@ -275,10 +275,22 @@ $(call clear-var-list, $(_product_var_list))
 # Now we can assign to PRODUCT_RUNTIMES
 PRODUCT_RUNTIMES := $(product_runtimes)
 product_runtimes :=
+
+PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_PROPERTY_OVERRIDES += persist.sys.dalvik.vm.lib.2=$(DALVIK_VM_LIB)
+
+ifeq ($(words $(PRODUCT_RUNTIMES)),1)
+  # If we only have one runtime, we can strip classes.dex by default during dex_preopt
+  DEX_PREOPT_DEFAULT := true
+else
+  # If we have more than one, we leave the classes.dex alone for post-boot analysis
+  DEX_PREOPT_DEFAULT := nostripping
+endif
+
 #############################################################################
 
 # A list of module names of BOOTCLASSPATH (jar files)
-PRODUCT_BOOT_JARS := $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_BOOT_JARS)
+PRODUCT_BOOT_JARS := $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_BOOT_JARS))
+PRODUCT_SYSTEM_SERVER_JARS := $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_SYSTEM_SERVER_JARS))
 
 # Find the device that this product maps to.
 TARGET_DEVICE := $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEVICE)
@@ -312,15 +324,24 @@ PRODUCT_AAPT_CONFIG := $(strip \
     $(if $(filter %dpi,$(PRODUCT_AAPT_CONFIG)),,mdpi))
 PRODUCT_AAPT_PREF_CONFIG := $(strip $(PRODUCT_AAPT_PREF_CONFIG))
 
-# Everyone gets nodpi assets which are density-independent.
-PRODUCT_AAPT_CONFIG += nodpi
+# Everyone gets nodpi and anydpi assets which are density-independent.
+PRODUCT_AAPT_CONFIG += nodpi anydpi
+
+# Keep a copy of the space-separated config
+PRODUCT_AAPT_CONFIG_SP := $(PRODUCT_AAPT_CONFIG)
 
 # Convert spaces to commas.
-comma := ,
 PRODUCT_AAPT_CONFIG := \
     $(subst $(space),$(comma),$(strip $(PRODUCT_AAPT_CONFIG)))
 PRODUCT_AAPT_PREF_CONFIG := \
     $(subst $(space),$(comma),$(strip $(PRODUCT_AAPT_PREF_CONFIG)))
+
+# product-scoped aapt flags
+PRODUCT_AAPT_FLAGS :=
+ifneq ($(filter en_XA ar_XB,$(PRODUCT_LOCALES)),)
+# Force generating resources for pseudo-locales.
+PRODUCT_AAPT_FLAGS += --pseudo-localize
+endif
 
 PRODUCT_BRAND := $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_BRAND))
 
@@ -361,28 +382,6 @@ endif
 # The optional :<owner> is used to indicate the owner of a vendor file.
 PRODUCT_COPY_FILES := \
     $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_COPY_FILES))
-_boot_animation := $(strip $(lastword $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_BOOTANIMATION)))
-ifneq ($(_boot_animation),)
-PRODUCT_COPY_FILES += \
-    $(_boot_animation):system/media/bootanimation.zip
-endif
-_boot_animation :=
-
-# We might want to skip items listed in PRODUCT_COPY_FILES for
-# various reasons. This is useful for replacing a binary module with one
-# built from source. This should be a list of destination files under $OUT
-PRODUCT_COPY_FILES_OVERRIDES := \
-	$(addprefix %:, $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_COPY_FILES_OVERRIDES)))
-
-ifneq ($(PRODUCT_COPY_FILES_OVERRIDES),)
-    PRODUCT_COPY_FILES := $(filter-out $(PRODUCT_COPY_FILES_OVERRIDES), $(PRODUCT_COPY_FILES))
-endif
-
-.PHONY: listcopies
-listcopies:
-	@echo "Copy files: $(PRODUCT_COPY_FILES)"
-	@echo "Overrides: $(PRODUCT_COPY_FILES_OVERRIDES)"
-
 
 # A list of property assignments, like "key = value", with zero or more
 # whitespace characters on either side of the '='.
@@ -425,3 +424,7 @@ PRODUCT_OTA_PUBLIC_KEYS := $(sort \
 
 PRODUCT_EXTRA_RECOVERY_KEYS := $(sort \
     $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_EXTRA_RECOVERY_KEYS))
+
+# If there is no room in /system for the image, place it in /data
+PRODUCT_DEX_PREOPT_IMAGE_IN_DATA := \
+    $(strip $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_DEX_PREOPT_IMAGE_IN_DATA))

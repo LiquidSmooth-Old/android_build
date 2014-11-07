@@ -9,31 +9,6 @@ else
 ABP:=$(PWD)/$(HOST_OUT_EXECUTABLES)
 endif
 
-# Add the ARM toolchain bin dir if it actually exists
-ifeq ($(TARGET_ARCH),arm)
-    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-$(TARGET_GCC_VERSION_AND)/bin),)
-        # this should be copied to HOST_OUT_EXECUTABLES instead
-        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-linux-androideabi-$(TARGET_GCC_VERSION_AND)/bin
-    endif
-    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-eabi-$(TARGET_GCC_VERSION_ARM)/bin),)
-        # this should be copied to HOST_OUT_EXECUTABLES instead
-        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/arm/arm-eabi-$(TARGET_GCC_VERSION_ARM)/bin
-    endif
-else ifeq ($(TARGET_ARCH),x86)
-
-# Add the x86 toolchain bin dir if it actually exists
-    ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-$(TARGET_GCC_VERSION_AND)/bin),)
-        # this should be copied to HOST_OUT_EXECUTABLES instead
-        ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/x86/i686-linux-android-$(TARGET_GCC_VERSION_AND)/bin
-    endif
-endif
-
-# Add the mips toolchain bin dir if it actually exists
-ifneq ($(wildcard $(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/mips/mipsel-linux-android-$(TARGET_GCC_VERSION_AND)/bin),)
-    # this should be copied to HOST_OUT_EXECUTABLES instead
-    ABP:=$(ABP):$(PWD)/prebuilts/gcc/$(HOST_PREBUILT_TAG)/mips/mipsel-linux-android-$(TARGET_GCC_VERSION_AND)/bin
-endif
-
 ANDROID_BUILD_PATHS := $(ABP)
 ANDROID_PREBUILTS := prebuilt/$(HOST_PREBUILT_TAG)
 ANDROID_GCC_PREBUILTS := prebuilts/gcc/$(HOST_PREBUILT_TAG)
@@ -100,12 +75,12 @@ $(info   TARGET_BUILD_APPS=$(TARGET_BUILD_APPS))
 $(info   TARGET_ARCH=$(TARGET_ARCH))
 $(info   TARGET_ARCH_VARIANT=$(TARGET_ARCH_VARIANT))
 $(info   TARGET_CPU_VARIANT=$(TARGET_CPU_VARIANT))
-$(info   TARGET_ROM_GCC_VERSION=$(TARGET_GCC_VERSION_AND))
-ifneq ($(TARGET_KERNEL_CUSTOM_TOOLCHAIN),)
-$(info   TARGET_KERNEL_CUSTOM_GCC_VERSION=$(TARGET_KERNEL_CUSTOM_TOOLCHAIN))
-else
-$(info   TARGET_KERNEL_GCC_VERSION=$(TARGET_GCC_VERSION_ARM))
-endif
+$(info   TARGET_GCC_VERSION=$(TARGET_GCC_VERSION))
+$(info   TARGET_GCC_VERSION_EXP=$(TARGET_GCC_VERSION_EXP))
+$(info   TARGET_USE_O3=$(TARGET_USE_O3))
+$(info   TARGET_2ND_ARCH=$(TARGET_2ND_ARCH))
+$(info   TARGET_2ND_ARCH_VARIANT=$(TARGET_2ND_ARCH_VARIANT))
+$(info   TARGET_2ND_CPU_VARIANT=$(TARGET_2ND_CPU_VARIANT))
 $(info   HOST_ARCH=$(HOST_ARCH))
 $(info   HOST_OS=$(HOST_OS))
 $(info   HOST_OS_EXTRA=$(HOST_OS_EXTRA))
