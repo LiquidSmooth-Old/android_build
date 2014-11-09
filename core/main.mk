@@ -418,7 +418,9 @@ ifneq ($(filter dalvik.gc.type-precise,$(PRODUCT_TAGS)),)
   # additional storage requirements for ".odex" files can cause /system
   # to overflow on some devices, so this is configured separately for
   # each product.
-  ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.dexopt-flags=m=y
+  ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.dexopt-flags=v=n,o=v,u=n,m=y
+  ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.execution-mode=int:jit
+  ADDITIONAL_BUILD_PROPERTIES += dalvik.vm.verify-bytecode=false
 endif
 
 ADDITIONAL_BUILD_PROPERTIES += net.bt.name=Android
