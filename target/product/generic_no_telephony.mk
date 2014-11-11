@@ -30,6 +30,7 @@ PRODUCT_PACKAGES := \
 PRODUCT_PACKAGES += \
     clatd \
     clatd.conf \
+    javax.btobex \
     pppd \
     screenrecord
 
