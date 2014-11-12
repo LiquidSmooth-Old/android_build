@@ -1616,9 +1616,9 @@ endif
 	@echo -e ${CL_BLU}"     / /   / / __ '/ / / / / __  /\__  \/ __' __ \/__ \/__ \/ __/ __ \ "${CL_BLU}
 	@echo -e ${CL_BLU}"    / /___/ / /_/ / /_/ / / /_/ /___/  / / / / / //_/ //_/ / /_/ / / / "${CL_BLU}
 	@echo -e ${CL_BLU}"   /_____/_/\__, /\__,_/_/\__,_//____ /_/ /_/ /_/\___/\___/\__/_/ /_/ "${CL_BLU}
-	@echo -e ${CL_BLU}"              /_/       "Liquid-Lollipop"${CL_BLU}
+	@echo -e ${CL_BLU}"              /_/       Liquid-Lollipop"${CL_BLU}
 	@echo -e ${CL_BLU}""${CL_BLU}
-	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_CYAN}
+	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_CYAN}${CL_RST}
 
 endif    # recovery_fstab is defined
 endif    # TARGET_NO_KERNEL != true
