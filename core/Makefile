@@ -1722,6 +1722,13 @@ ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
         $(error TARGET_CUSTOM_RELEASETOOL is deprecated)
 endif
 
+ifeq ($(USE_PREBUILT_CHROMIUM),1)
+ifneq ($(PRODUCT_PREBUILT_WEBVIEWCHROMIUM),yes)
+	@echo "Running Chromium prebuilt setup script..."
+	$(hide) . $(TOPDIR)vendor/slim/tools/chromium_prebuilt.sh $(TOP)
+endif
+endif
+
 bootzip: bootimage
 	$(BOOT_ZIP_FROM_IMAGE_SCRIPT) \
 	   $(recovery_fstab) \
