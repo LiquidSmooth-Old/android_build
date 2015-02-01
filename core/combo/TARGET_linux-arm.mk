@@ -105,6 +105,7 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += \
 			-no-canonical-prefixes \
 			-fno-canonical-system-headers \
 			$(arch_variant_cflags) \
+			$(BOARD_GLOBAL_CFLAGS) \
 			-include $(android_config_h) \
 			-I $(dir $(android_config_h))
 
@@ -138,12 +139,15 @@ $(combo_2nd_arch_prefix)TARGET_GLOBAL_LDFLAGS += \
 
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CFLAGS += -mthumb-interwork
 
+
 ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden -O3 -DNDEBUG -pipe -fivopts -ffunction-sections -fdata-sections -funswitch-loops -fomit-frame-pointer -ftracer -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-maybe-uninitialized $(call cpp-option,$(-fira-loop-pressure,-fforce-addr,-funsafe-loop-optimizations,-funroll-loops,-ftree-loop-distribution,-fsection-anchors,-ftree-loop-im,-ftree-loop-ivcanon,-ffunction-sections,-fgcse-las,-fgcse-sm,-fweb,-ffp-contract=fast,-fgraphite,-floop-flatten,-floop-parallelize-all,-ftree-loop-linear,-floop-interchange,-floop-strip-mine,-floop-block))
 $(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := -O3 -DNDEBUG -pipe -g -frerun-cse-after-loop -frename-registers -fno-strict-aliasing -fivopts -ffunction-sections -fdata-sections -funswitch-loops -fomit-frame-pointer -ftracer -Wno-unused-parameter -Wno-unused-but-set-variable -Wno-maybe-uninitialized $(call cc-option,$(-fira-loop-pressure,-fforce-addr,-funsafe-loop-optimizations,-funroll-loops,-ftree-loop-distribution,-fsection-anchors,-ftree-loop-im,-ftree-loop-ivcanon,-ffunction-sections,-fgcse-after-reload,-fgcse-las,-fgcse-sm,-fweb,-ffp-contract=fast,-fgraphite,-floop-flatten,-floop-parallelize-all,-ftree-loop-linear,-floop-interchange,-floop-strip-mine,-floop-block))
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += $(BOARD_GLOBAL_CPPFLAGS)
 else
 $(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += -fvisibility-inlines-hidden
 $(combo_2nd_arch_prefix)TARGET_RELEASE_CFLAGS := -DNDEBUG -g -Wstrict-aliasing=2 -fgcse-after-reload -frerun-cse-after-loop -frename-registers
+$(combo_2nd_arch_prefix)TARGET_GLOBAL_CPPFLAGS += $(BOARD_GLOBAL_CPPFLAGS)
 endif
 
 libc_root := bionic/libc
