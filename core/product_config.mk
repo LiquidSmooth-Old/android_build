@@ -1,4 +1,5 @@
 #
+#
 # Copyright (C) 2008 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -184,8 +185,8 @@ ifneq ($(strip $(TARGET_BUILD_APPS)),)
 all_product_configs := $(call get-product-makefiles,\
     $(SRC_TARGET_DIR)/product/AndroidProducts.mk)
 else
-  ifneq ($(SLIM_BUILD),)
-    all_product_configs := $(shell ls device/*/$(SLIM_BUILD)/slim.mk)
+  ifneq ($(LIQUID_BUILD),)
+    all_product_configs := $(shell ls device/*/$(LIQUID_BUILD)/slim.mk)
   else
     # Read in all of the product definitions specified by the AndroidProducts.mk
     # files in the tree.
@@ -193,7 +194,7 @@ else
   endif
 endif
 
-ifeq ($(SLIM_BUILD),)
+ifeq ($(LIQUID_BUILD),)
 # Find the product config makefile for the current product.
 # all_product_configs consists items like:
 # <product_name>:<path_to_the_product_makefile>

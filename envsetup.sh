@@ -70,12 +70,12 @@ function check_product()
         return
     fi
 
-    if (echo -n $1 | grep -q -e "^slim_") ; then
-       SLIM_BUILD=$(echo -n $1 | sed -e 's/^slim_//g')
+    if (echo -n $1 | grep -q -e "^liquid_") ; then
+       LIQUID_BUILD=$(echo -n $1 | sed -e 's/^liquid_//g')
     else
-       SLIM_BUILD=
+       LIQUID_BUILD=
     fi
-    export SLIM_BUILD
+    export LIQUID_BUILD
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -511,7 +511,7 @@ function brunch()
 {
     breakfast $*
     if [ $? -eq 0 ]; then
-mka bacon
+mka liquid
     else
 echo "No such item in brunch menu. Try 'breakfast'"
         return 1
@@ -534,7 +534,7 @@ function breakfast()
 {
     target=$1
     local variant=$2
-    SLIM_DEVICES_ONLY="true"
+    LIQUID_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
     for f in `/bin/ls vendor/slim/vendorsetup.sh 2> /dev/null`
@@ -557,7 +557,7 @@ echo "z$target" | grep -q "-"
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
-            lunch slim_$target-$variant
+            lunch LIQUID_$target-$variant
         fi
 fi
 return $?
