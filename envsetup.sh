@@ -22,7 +22,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - aospremote: Add git remote for matching AOSP repository
 - cafremote: Add git remote for matching CodeAurora repository.
 - cmremote: Add a git remote for matching CM repository.
-- slimremote: Add a git remote for matching SLIM repository.
+- liquidremote: Add a git remote for matching LIQUID repository.
 - mka:      Builds using SCHED_BATCH on all processors
 - reposync: Parallel repo sync using ionice and SCHED_BATCH
 
@@ -537,7 +537,7 @@ function breakfast()
     LIQUID_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
-    for f in `/bin/ls vendor/slim/vendorsetup.sh 2> /dev/null`
+    for f in `/bin/ls vendor/liquid/vendorsetup.sh 2> /dev/null`
         do
 echo "including $f"
             . $f
@@ -553,7 +553,7 @@ echo "z$target" | grep -q "-"
             # A buildtype was specified, assume a full device name
             lunch $target
         else
-            # This is probably just the SLIM model name
+            # This is probably just the LIQUID model name
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
@@ -604,7 +604,7 @@ function lunch()
     check_product $product
     if [ $? -ne 0 ]
     then
-        # if we can't find a product, try to grab it off the SlimRoms github
+        # if we can't find a product, try to grab it off the LiquidSmooth github
         T=$(gettop)
         pushd $T > /dev/null
         build/tools/roomservice.py $product
@@ -758,8 +758,8 @@ alias mmp='mmmp .'
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.slim\.version/s/.*=//p' $OUT/system/build.prop`
-        ZIPFILE=slim-$MODVERSION.zip
+        MODVERSION=`sed -n -e'/ro\.liquid\.version/s/.*=//p' $OUT/system/build.prop`
+        ZIPFILE=liquid-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
@@ -1651,9 +1651,9 @@ function cmremote()
     echo "Remote 'cm' created"
 }
 
-function slimremote()
+function liquidremote()
 {
-    git remote rm slim 2> /dev/null
+    git remote rm liquid 2> /dev/null
     PFX=""
     if [ ! -d .git ]
     then
@@ -1667,8 +1667,8 @@ function slimremote()
 
     PROJECT="$(echo $PROJ | sed 's/\//_/g')"
 
-    git remote add slim git@github.com:SlimRoms/$PFX$PROJECT
-    echo "Remote 'slim' created"
+    git remote add liquid git@github.com:LiquidSmooth/$PFX$PROJECT
+    echo "Remote 'liquid' created"
     fi
 }
 
