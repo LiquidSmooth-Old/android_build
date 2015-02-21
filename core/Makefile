@@ -1625,7 +1625,7 @@ else
 endif
 
 ifneq ($(LIQUID_BUILD),)
-LIQUID_TARGET_PACKAGE := $(PRODUCT_OUT)/$(LIQUID_MOD_VERSION).zip
+LIQUID_TARGET_PACKAGE := $(PRODUCT_OUT)/$(LIQUID_VERSION)-$(TARGET_PRODUCT).zip
 endif
 
 ifeq ($(TARGET_OTA_ASSERT_DEVICE),)
@@ -1656,7 +1656,21 @@ liquid: check_liquid otapackage
 ifneq ($(LIQUID_BUILD),)
 	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(LIQUID_TARGET_PACKAGE)
 	$(hide) $(MD5SUM) $(LIQUID_TARGET_PACKAGE) > $(LIQUID_TARGET_PACKAGE).md5sum
-	@echo -e "Package Complete: $(LIQUID_TARGET_PACKAGE)"
+	@echo -e ${CL_BLU}""${CL_BLU}
+	@echo -e ${CL_BLU}"       __                        _______                      __  __ "${CL_BLU}
+	@echo -e ${CL_BLU}"      / /   __ ___  __  __ _ ___/ / ___/ ___ ____  ___  ___  / /_/ /_ "${CL_BLU}
+	@echo -e ${CL_BLU}"     / /   / / __ '/ / / / / __  /\__  \/ __' __ \/__ \/__ \/ __/ __ \ "${CL_BLU}
+	@echo -e ${CL_BLU}"    / /___/ / /_/ / /_/ / / /_/ /___/  / / / / / //_/ //_/ / /_/ / / / "${CL_BLU}
+	@echo -e ${CL_BLU}"   /_____/_/\__, /\__,_/_/\__,_//____ /_/ /_/ /_/\___/\___/\__/_/ /_/ "${CL_BLU}
+	@echo -e ${CL_BLU}"              /_/       Liquid-Lollipop"${CL_BLU}
+	@echo -e ${CL_BLU}""${CL_BLU}
+	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_CYAN}${CL_RST}
+endif
+
+ifeq ($(LIQUID_CHANGELOG),true)
+# Generate changelog
+	$(hide) ./vendor/liquid/tools/changelog
+	$(hide) mv $(PRODUCT_OUT)/Changelog.txt $(PRODUCT_OUT)/$(LIQUID_VERSION)-$(TARGET_PRODUCT).txt
 endif
 
 check_liquid:
