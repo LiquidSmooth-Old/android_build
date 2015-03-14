@@ -97,8 +97,8 @@ else
   endif
 endif
 
-ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
-include $(BUILD_SYSTEM)/graphite.mk
+include $(BUILD_SYSTEM)/liquid.mk
+
 endif
 
 # The following LOCAL_ variables will be modified in this file.
