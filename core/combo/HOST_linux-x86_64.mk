@@ -18,8 +18,8 @@
 # Included by combo/select.mk
 
 ifeq ($(strip $(HOST_TOOLCHAIN_PREFIX)),)
-ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
-HOST_TOOLCHAIN_PREFIX := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.8/bin/x86_64-linux-
+ifeq ($(USE_HOST_4_8),true)
+HOST_TOOLCHAIN_PREFIX := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.15-4.8/bin/x86_64-linux-
 else
 HOST_TOOLCHAIN_PREFIX := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/bin/x86_64-linux-
 endif
@@ -32,8 +32,8 @@ HOST_AR  := $(HOST_TOOLCHAIN_PREFIX)ar
 endif # $(HOST_TOOLCHAIN_PREFIX)gcc exists
 
 # gcc location for clang; to be updated when clang is updated
-ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
-HOST_TOOLCHAIN_FOR_CLANG := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.8/
+ifeq ($(USE_HOST_4_8),true)
+HOST_TOOLCHAIN_FOR_CLANG := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.15-4.8/
 else
 HOST_TOOLCHAIN_FOR_CLANG := prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.6/
 endif
