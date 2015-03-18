@@ -755,52 +755,6 @@ function mmmp()
 
 alias mmp='mmmp .'
 
-function eat()
-{
-    if [ "$OUT" ] ; then
-        MODVERSION=`sed -n -e'/ro\.liquid\.version/s/.*=//p' $OUT/system/build.prop`
-        ZIPFILE=liquid-$MODVERSION.zip
-        ZIPPATH=$OUT/$ZIPFILE
-        if [ ! -f $ZIPPATH ] ; then
-            echo "Nothing to eat"
-            return 1
-        fi
-        adb start-server # Prevent unexpected starting server message from adb get-state in the next line
-        if [ $(adb get-state) != device -a $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) != 0 ] ; then
-            echo "No device is online. Waiting for one..."
-            echo "Please connect USB and/or enable USB debugging"
-            until [ $(adb get-state) = device -o $(adb shell busybox test -e /sbin/recovery 2> /dev/null; echo $?) = 0 ];do
-                sleep 1
-            done
-            echo "Device Found.."
-        fi
-        # if adbd isn't root we can't write to /cache/recovery/
-        adb root
-        sleep 1
-        adb wait-for-device
-        cat << EOF > /tmp/command
---sideload
-EOF
-        if adb push /tmp/command /cache/recovery/ ; then
-            echo "Rebooting into recovery for sideload installation"
-            adb reboot recovery
-            adb wait-for-sideload
-            adb sideload $ZIPPATH
-        fi
-        rm /tmp/command
-    else
-        echo "Nothing to eat"
-        return 1
-    fi
-    return $?
-}
-
-function omnom
-{
-    brunch $*
-    eat
-}
-
 function gettop
 {
     local TOPFILE=build/core/envsetup.mk
