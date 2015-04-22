@@ -2014,6 +2014,7 @@ function chromium_prebuilt() {
     txtbld=$(tput bold)
     bldblu=${txtbld}$(tput setaf 4)
     bldgrn=${txtbld}$(tput setaf 2)
+    txtrst=$(tput sgr0)
 
     if [ -r $hash ] && [ $(git --git-dir=$T/external/chromium_org/.git --work-tree=$T/external/chromium_org rev-parse --verify HEAD) == $(cat $hash) ] && [ -f $libsCheck ] && [ -d $appCheck ]; then
         export PRODUCT_PREBUILT_WEBVIEWCHROMIUM=yes
