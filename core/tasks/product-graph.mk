@@ -137,11 +137,11 @@ $(foreach p,$(really_all_products), \
    )
 
 $(products_pdf): $(products_graph)
-	@echo -e ${CL_GRN}"Product graph PDF:"${CL_RST}" $@"
+	@echo -e ${PRT_TGT}"Product graph PDF:"${CL_RST}" $@"
 	dot -Tpdf -Nshape=box -o $@ $<
 
 $(products_svg): $(products_graph) $(product_debug_files)
-	@echo -e ${CL_GRN}"Product graph SVG:"${CL_RST}" $@"
+	@echo -e ${PRT_TGT}"Product graph SVG:"${CL_RST}" $@"
 	dot -Tsvg -Nshape=box -o $@ $<
 
 product-graph: $(products_pdf) $(products_svg)

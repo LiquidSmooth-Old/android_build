@@ -1066,7 +1066,7 @@ $(foreach module,$(sample_MODULES),$(eval $(call \
 sample_ADDITIONAL_INSTALLED := \
         $(filter-out $(modules_to_install) $(modules_to_check) $(ALL_PREBUILT),$(sample_MODULES))
 samplecode: $(sample_APKS_COLLECTION)
-	@echo -e ${CL_GRN}"Collect sample code apks:"${CL_RST}" $^"
+	@echo -e ${PRT_TGT}"Collect sample code apks:"${CL_RST}" $^"
 	# remove apks that are not intended to be installed.
 	rm -f $(sample_ADDITIONAL_INSTALLED)
 endif  # samplecode in $(MAKECMDGOALS)
@@ -1077,7 +1077,7 @@ findbugs: $(INTERNAL_FINDBUGS_HTML_TARGET) $(INTERNAL_FINDBUGS_XML_TARGET)
 .PHONY: clean
 clean:
 	@rm -rf $(OUT_DIR)/*
-	@echo -e ${CL_GRN}"Entire build directory removed."${CL_RST}
+	@echo -e ${PRT_TGT}"Entire build directory removed."${CL_RST}
 
 .PHONY: clobber
 clobber: clean
@@ -1087,47 +1087,47 @@ clobber: clean
 appclean:
 	@rm -rf $(OUT_DIR)/target/product/*/system/app
 	@rm -rf $(OUT_DIR)/target/product/*/system/priv-app
-	@echo -e ${CL_GRN}"All apks erased"${CL_RST}
+	@echo -e ${PRT_TGT}"All apks erased"${CL_RST}
 
 # Clears out all .img files
 .PHONY: imgclean
 imgclean:
 	@rm -rf $(OUT_DIR)/target/product/*/*.img
-	@echo -e ${CL_GRN}"All .img files erased"${CL_RST}
+	@echo -e ${PRT_TGT}"All .img files erased"${CL_RST}
 
 # Clears out all kernel stuff
 .PHONY: kernelclean
 kernelclean:
 	@rm -rf $(OUT_DIR)/target/product/*/kernel
 	@rm -rf $(OUT_DIR)/target/product/*/boot.img
-	@echo -e ${CL_GRN}"All kernel compnents erased"${CL_RST}
+	@echo -e ${PRT_TGT}"All kernel compnents erased"${CL_RST}
 
 # Clears out all system stuff
 .PHONY: systemclean
 systemclean:
 	@rm -rf $(OUT_DIR)/target/product/*/system/
 	@rm -rf $(OUT_DIR)/target/product/*/system.img
-	@echo -e ${CL_GRN}"System components erased"${CL_RST}
+	@echo -e ${PRT_TGT}"System components erased"${CL_RST}
 
 # Clears out all recovery stuff
 .PHONY: recoveryclean
 recoveryclean:
 	@rm -rf $(OUT_DIR)/target/product/*/recovery/
 	@rm -rf $(OUT_DIR)/target/product/*/recovery.img
-	@echo -e ${CL_GRN}"All recovery components erased"${CL_RST}
+	@echo -e ${PRT_TGT}"All recovery components erased"${CL_RST}
 
 # Clears out all root stuff
 .PHONY: rootclean
 rootclean:
 	@rm -rf $(OUT_DIR)/target/product/*/root/
-	@echo -e ${CL_GRN}"All root components erased"${CL_RST}
+	@echo -e ${PRT_TGT}"All root components erased"${CL_RST}
 
 # The rules for dataclean and installclean are defined in cleanbuild.mk.
 
 .PHONY: magic
 magic:
 	@rm -rf $(OUT_DIR)/target/product/*
-	@echo -e ${CL_GRN}"Target/Product directory removed."${CL_RST}
+	@echo -e ${PRT_TGT}"Target/Product directory removed."${CL_RST}
 
 # Clears out zip and build.prop
 .PHONY: dirty
@@ -1135,12 +1135,12 @@ dirty:
 	@rm -rf $(OUT_DIR)/target/product/*/system/build.prop
 	@rm -rf $(OUT_DIR)/target/product/*/*.zip
 	@rm -rf $(OUT_DIR)/target/product/*/*.md5sum
-	@echo -e ${CL_GRN}"build.prop and zip files erased"${CL_RST}
+	@echo -e ${PRT_TGT}"build.prop and zip files erased"${CL_RST}
 
 #xxx scrape this from ALL_MODULE_NAME_TAGS
 .PHONY: modules
 modules:
-	@echo -e ${CL_GRN}"Available sub-modules:"${CL_RST}
+	@echo -e ${PRT_TGT}"Available sub-modules:"${CL_RST}
 	@echo "$(call module-names-for-tag-list,$(ALL_MODULE_TAGS))" | \
 	      tr -s ' ' '\n' | sort -u | $(COLUMN)
 
