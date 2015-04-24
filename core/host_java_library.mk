@@ -59,7 +59,7 @@ $(full_classes_emma_jar) : $(full_classes_compiled_jar) | $(EMMA_JAR)
 	$(transform-classes.jar-to-emma)
 
 $(LOCAL_BUILT_MODULE) : $(full_classes_emma_jar)
-	@echo -e ${CL_YLW}"Copying:"${CL_RST}" $@"
+	@echo -e ${PRT_HST}"Copying:"${CL_RST}" $@"
 	$(hide) $(ACP) -fp $< $@
 
 else # LOCAL_EMMA_INSTRUMENT
