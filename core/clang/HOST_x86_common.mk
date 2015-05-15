@@ -15,6 +15,7 @@ CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CFLAGS := \
   -no-integrated-as
 
 ifneq ($(strip $($(clang_2nd_arch_prefix)HOST_IS_64_BIT)),)
+ifeq ($(USE_HOST_4_8),true)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
@@ -22,7 +23,17 @@ CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
   -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/x86_64-linux \
   -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/backward \
   -no-integrated-as
+else
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6 \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/x86_64-linux \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/backward \
+  -no-integrated-as
+endif
 
+ifeq ($(USE_HOST_4_8),true)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
@@ -32,6 +43,17 @@ CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
   -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/lib64/ \
   -no-integrated-as
 else
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/bin \
+  -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/lib/gcc/x86_64-linux/4.6 \
+  -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/lib/gcc/x86_64-linux/4.6 \
+  -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/lib64/ \
+  -no-integrated-as
+endif
+else
+ifeq ($(USE_HOST_4_8),true)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
@@ -39,7 +61,17 @@ CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
   -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/x86_64-linux/32 \
   -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/backward \
   -no-integrated-as
+else
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_CPPFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6 \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/x86_64-linux/32 \
+  -isystem $($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/include/c++/4.6/backward \
+  -no-integrated-as
+endif
 
+ifeq ($(USE_HOST_4_8),true)
 CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
   --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
   --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
@@ -48,6 +80,16 @@ CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
   -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/lib/gcc/x86_64-linux/4.6/32 \
   -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/lib32/ \
   -no-integrated-as
+else
+CLANG_CONFIG_x86_LINUX_HOST_EXTRA_LDFLAGS := \
+  --gcc-toolchain=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG) \
+  --sysroot=$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/sysroot \
+  -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/bin \
+  -B$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/lib/gcc/x86_64-linux/4.6/32 \
+  -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/lib/gcc/x86_64-linux/4.6/32 \
+  -L$($(clang_2nd_arch_prefix)HOST_TOOLCHAIN_FOR_CLANG)/x86_64-linux/lib32/ \
+  -no-integrated-as
+endif
 endif
 endif  # Linux
 
