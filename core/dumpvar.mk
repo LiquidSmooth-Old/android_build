@@ -80,8 +80,20 @@ $(info   HOST_OS_EXTRA=$(HOST_OS_EXTRA))
 $(info   HOST_BUILD_TYPE=$(HOST_BUILD_TYPE))
 $(info   BUILD_ID=$(BUILD_ID))
 $(info   OUT_DIR=$(OUT_DIR))
-ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
-$(info   LIQUIFY=$(LIQUIFY))
+ifeq ($(STRICT),true)
+$(info   STRICT=$(STRICT))
 endif
+ifeq ($(USE_O3),true)
+$(info   O3=$(USE_O3))
+endif
+ifeq ($(GRAPHITE),true)
+$(info   GRAPHITE=$(GRAPHITE))
+endif
+ifeq ($(LTO),true)
+$(info   LTO=$(LTO))
+endif
+ifeq ($(A15_QUAD),true)
+$(info   A15_QUAD=$(A15_QUAD))
+endif 
 $(info ============================================)
 endif
