@@ -97,9 +97,67 @@ else
   endif
 endif
 
-ifeq ($(LIQUIFY),$(filter $(LIQUIFY),TRUE true True))
-include $(BUILD_SYSTEM)/graphite.mk
+
+# STRICT ALIASING   #
+ifeq ($(STRICT),true)
+ifneq ($(filter,$(LOCAL_MODULE)),)
+
+ifdef LOCAL_CONLYFLAGS
+LOCAL_CONLYFLAGS += \
+	$(STRICT_ALIASING_FLAGS)
+else
+LOCAL_CONLYFLAGS := \
+	$(STRICT_ALIASING_FLAGS)
 endif
+ifdef LOCAL_CPPFLAGS
+LOCAL_CPPFLAGS += \
+	$(STRICT_ALIASING_FLAGS)
+else
+LOCAL_CPPFLAGS := \
+	$(STRICT_ALIASING_FLAGS)
+endif
+ifndef LOCAL_CLANG
+LOCAL_CONLYFLAGS += \
+	$(STRICT_GCC_LEVEL)
+LOCAL_CPPFLAGS += \
+	$(STRICT_GCC_LEVEL)
+else
+LOCAL_CONLYFLAGS += \
+	$(STRICT_CLANG_LEVEL)
+LOCAL_CPPFLAGS += \
+	$(STRICT_CLANG_LEVEL)
+endif
+
+endif
+endif
+
+#       GRAPHITE       #
+ifeq ($(GRAPHITE),true)
+ifndef LOCAL_IS_HOST_MODULE
+ifeq ($(LOCAL_CLANG),)
+ifeq ($(filter $(DISABLE_GRAPHITE), $(LOCAL_MODULE)),)
+
+ifdef LOCAL_CONLYFLAGS
+LOCAL_CONLYFLAGS += \
+	$(GRAPHITE_FLAGS)
+else
+LOCAL_CONLYFLAGS := \
+	$(GRAPHITE_FLAGS)
+endif
+
+ifdef LOCAL_CPPFLAGS
+LOCAL_CPPFLAGS += \
+	$(GRAPHITE_FLAGS)
+else
+LOCAL_CPPFLAGS := \
+	$(GRAPHITE_FLAGS)
+endif
+
+endif
+endif
+endif
+endif
+
 
 # The following LOCAL_ variables will be modified in this file.
 # Because the same LOCAL_ variables may be used to define modules for both 1st arch and 2nd arch,
