@@ -265,6 +265,9 @@ def create_dependency_manifest(dependencies):
     if len(projects) > 0:
         os.system("repo sync -f --no-clone-bundle %s" % " ".join(projects))
 
+    for depend_project in projects:
+        fetch_dependencies(depend_project)
+
 
 def fetch_dependencies(device):
     location = parse_device_from_folder(device)
