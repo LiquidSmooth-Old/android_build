@@ -21,7 +21,10 @@ endif
 	arch_variant_cflags += -D__ARM_FEATURE_LPAE=1 -D__ARM_FEATURE_VFP4=1
 else
 ifeq ($(strip $(TARGET_$(combo_2nd_arch_prefix)CPU_VARIANT)),cortex-a9)
-	arch_variant_cflags := -mcpu=cortex-a9 -mfpu=neon
+ifeq ($(A9_QUAD),true)
+	arch_variant_cflags := -mcpu=cortex-a9 -mfpu=neon -mvectorize-with-neon-quad
+else
+        arch_variant_cflags := -mcpu=cortex-a9 -mfpu=neon
 else
 ifneq (,$(filter cortex-a8 scorpion,$(TARGET_$(combo_2nd_arch_prefix)CPU_VARIANT)))
 	arch_variant_cflags := -mcpu=cortex-a8 -mfpu=neon
