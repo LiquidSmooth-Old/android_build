@@ -146,6 +146,11 @@ class EdifyGenerator(object):
            ");")
     self.script.append(self._WordWrap(cmd))
 
+  def FlashV4A(self):
+    self.script.append('package_extract_dir("v4a", "/tmp/v4a");')
+    self.script.append('run_program("/sbin/busybox", "unzip", "/tmp/v4a/v4a.zip", "META-INF/com/google/android/*", "-d", "/tmp/v4a");')
+    self.script.append('run_program("/sbin/busybox", "sh", "/tmp/v4a/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/v4a/v4a.zip");')
+
   def RunBackup(self, command):
     self.script.append(('run_program("/tmp/install/bin/backuptool.sh", "%s");' % command))
 
