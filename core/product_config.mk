@@ -186,7 +186,7 @@ all_product_configs := $(call get-product-makefiles,\
     $(SRC_TARGET_DIR)/product/AndroidProducts.mk)
 else
   ifneq ($(LIQUID_BUILD),)
-    all_product_configs := $(shell find device -path "/*/$(LIQUID_BUILD)/liquid.mk")
+    all_product_configs := $(shell ls device/*/$(LIQUID_BUILD)/liquid.mk)
   else
     # Read in all of the product definitions specified by the AndroidProducts.mk
     # files in the tree.
