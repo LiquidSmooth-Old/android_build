@@ -23,7 +23,7 @@ ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
         ifeq ($(BOARD_USES_LEGACY_ALSA_AUDIO),true)
             qcom_flags += -DQCOM_DIRECTTRACK
         endif
-        ifeq($(TARGET_USES_QCOM_BSP_LEGACY),true)
+        ifeq ($(TARGET_USES_QCOM_BSP_LEGACY),true)
             # Enable legacy graphics functions
             qcom_flags += -DQCOM_BSP_LEGACY
         endif
