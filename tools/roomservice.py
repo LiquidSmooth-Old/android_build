@@ -44,7 +44,7 @@ DEBUG = False
 default_manifest = ".repo/manifest.xml"
 
 custom_local_manifest = ".repo/local_manifests/roomservice.xml"
-custom_default_revision = "5.1"
+custom_default_revision = "lp5.1"
 custom_dependencies = "liquid.dependencies"
 default_remote = "gh"
 org_display = "LiquidSmooth-Devices"  # needed for displaying
