@@ -219,6 +219,7 @@ ifeq ($(TARGET_CPU_ABI),)
   $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
 endif
 TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
+include $(BUILD_SYSTEM)/liquidsmooth.mk
 
 # $(1): os/arch
 define select-android-config-h
@@ -643,10 +644,10 @@ ifneq ($(TARGET_COPY_FILES_OVERRIDES),)
     PRODUCT_COPY_FILES := $(filter-out $(TARGET_COPY_FILES_OVERRIDES), $(PRODUCT_COPY_FILES))
 endif
 
-ifneq ($(SLIM_BUILD),)
+ifneq ($(LIQUID_BUILD),)
 ## We need to be sure the global selinux policies are included
 ## last, to avoid accidental resetting by device configs
-$(eval include vendor/slim/sepolicy/sepolicy.mk)
+$(eval include vendor/liquid/sepolicy/sepolicy.mk)
 endif
 
 include $(BUILD_SYSTEM)/dumpvar.mk

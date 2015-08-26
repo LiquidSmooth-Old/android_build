@@ -55,6 +55,7 @@ PRODUCT_PACKAGES += \
     libinput \
     libinputflinger \
     libiprouteutil \
+    libjni_latinime \
     libjnigraphics \
     libldnhncr \
     libmedia \
@@ -110,6 +111,7 @@ PRODUCT_PACKAGES += \
     settings \
     svc \
     tc \
+    tm \
     vdc \
     vold \
     wm
