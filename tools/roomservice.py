@@ -47,8 +47,8 @@ custom_local_manifest = ".repo/local_manifests/local_manifest.xml"
 custom_default_revision = "lp5.1"
 custom_dependencies = "liquid.dependencies"
 default_remote = "gh"
-org_manifest = org_display  # leave empty if org is provided in manifest
 org_display = "LiquidSmooth-Devices"  # needed for displaying
+org_manifest = org_display  # leave empty if org is provided in manifest
 
 github_auth = None
 
