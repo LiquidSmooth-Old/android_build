@@ -238,6 +238,7 @@ endif
 			TARGET_BUILD_FLAVOR="$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)" \
 			TARGET_DEVICE="$(TARGET_DEVICE)" \
 			LIQUID_DEVICE="$(TARGET_DEVICE)" \
+			LIQUID_VARIANT="$(LIQUID_VARIANT)" \
 			PRODUCT_NAME="$(TARGET_PRODUCT)" \
 			PRODUCT_BRAND="$(PRODUCT_BRAND)" \
 			PRODUCT_DEFAULT_LANGUAGE="$(call default-locale-language,$(PRODUCT_LOCALES))" \
@@ -1710,7 +1711,7 @@ ifneq ($(LIQUID_BUILD),)
 	@echo -e ${CL_BLU}"   /_____/_/\__, /\__,_/_/\__,_//____ /_/ /_/ /_/\___/\___/\__/_/ /_/ "${CL_BLU}
 	@echo -e ${CL_BLU}"              /_/       Liquid-Lollipop"${CL_BLU}
 	@echo -e ${CL_BLU}""${CL_BLU}
-	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_CYAN}${CL_RST}
+	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)-$(LIQUID_VARIANT)"${CL_CYAN}${CL_RST}
 endif
 
 ifeq ($(LIQUID_CHANGELOG),true)
