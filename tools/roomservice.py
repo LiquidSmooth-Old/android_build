@@ -43,12 +43,12 @@ except ImportError:
 DEBUG = False
 default_manifest = ".repo/manifest.xml"
 
-custom_local_manifest = ".repo/local_manifests/local_manifest.xml"
+custom_local_manifest = ".repo/local_manifests/roomservice.xml"
 custom_default_revision = "lp5.1"
 custom_dependencies = "liquid.dependencies"
 default_remote = "gh"
 org_display = "LiquidSmooth-Devices"  # needed for displaying
-org_manifest = org_display  # leave empty if org is provided in manifest
+org_manifest = org_display # leave empty if org is provided in manifest
 
 github_auth = None
 
@@ -172,12 +172,15 @@ def add_to_manifest(repos, fallback_branch=None):
         repo_target = repo['target_path']
         repo_remote = repo.get("remote", default_remote)
         repo_branch = repo.get("revision", custom_default_revision)
+        # Hack for LiquidSmooth. Remove me once all repos have been migrated safely
+        repo['branch'] = repo_branch
         if is_in_manifest(repo_target):
             print('already exists: %s' % repo_target)
             continue
 
-        if "/" not in repo_name:
-            repo_name = os.path.join(org_manifest, repo_name)
+        if (repo_remote == "gh") or (repo_remote == "github"):
+            if "/" not in repo_name:
+                repo_name = os.path.join(org_manifest, repo_name)
 
         print('Adding dependency: %s -> %s' % (repo_name, repo_target))
 
@@ -353,7 +356,6 @@ def main():
 
     for repository in repositories:
         repo_name = repository['name']
-
         if not (repo_name.startswith("android_device_") and
                 repo_name.endswith("_" + device)):
             continue
