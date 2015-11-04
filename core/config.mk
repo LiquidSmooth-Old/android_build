@@ -705,10 +705,10 @@ ifneq ($(TARGET_COPY_FILES_OVERRIDES),)
     PRODUCT_COPY_FILES := $(filter-out $(TARGET_COPY_FILES_OVERRIDES), $(PRODUCT_COPY_FILES))
 endif
 
-ifneq ($(SLIM_BUILD),)
+ifneq ($(LIQUID_BUILD),)
 ## We need to be sure the global selinux policies are included
 ## last, to avoid accidental resetting by device configs
-$(eval include vendor/slim/sepolicy/sepolicy.mk)
+$(eval include vendor/liquid/sepolicy/sepolicy.mk)
 
 # Include any vendor specific config.mk file
 -include $(TOPDIR)vendor/*/build/core/config.mk

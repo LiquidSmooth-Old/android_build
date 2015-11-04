@@ -17,12 +17,14 @@ endif
 LOCAL_PATH := $(BUILD_SYSTEM)
 
 # Pick a reasonable string to use to identify files.
+ifneq ($(LIQUID_BUILD),)
 ifneq "" "$(filter eng.%,$(BUILD_NUMBER))"
   # BUILD_NUMBER has a timestamp in it, which means that
   # it will change every time.  Pick a stable value.
-  FILE_NAME_TAG := eng.$(USER)
+FILE_NAME_TAG := $(BUILD_NUMBER)
+endif
 else
-  FILE_NAME_TAG := $(BUILD_NUMBER)
+FILE_NAME_TAG := eng.$(USER) 
 endif
 
 # -----------------------------------------------------------------
@@ -218,7 +220,7 @@ endif
 	$(hide) TARGET_BUILD_TYPE="$(TARGET_BUILD_VARIANT)" \
 			TARGET_BUILD_FLAVOR="$(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT)" \
 			TARGET_DEVICE="$(TARGET_VENDOR_DEVICE_NAME)" \
-			SLIM_DEVICE="$(TARGET_DEVICE)" \
+			LIQUID_DEVICE="$(TARGET_DEVICE)" \
 			PRODUCT_NAME="$(TARGET_VENDOR_PRODUCT_NAME)" \
 			PRODUCT_BRAND="$(PRODUCT_BRAND)" \
 			PRODUCT_DEFAULT_LOCALE="$(call get-default-product-locale,$(PRODUCT_LOCALES))" \
@@ -1095,7 +1097,13 @@ INTERNAL_SYSTEMIMAGE_FILES := $(filter $(TARGET_OUT)/%, \
     $(RECOVERY_PATCH_INSTALL))
 
 
-FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
+systemimage-squisher: $(INTERNAL_SYSTEMIMAGE_FILES)
+	@echo -e "Optimizing PNGs to Shrink ROM Size!"
+	$(hide) APKCERTS=$(APKCERTS_FILE) ./vendor/liquid/tools/squisher
+
+.PHONY: systemimage-squisher
+
+FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS) systemimage-squisher
 # -----------------------------------------------------------------
 # installed file list
 # Depending on anything that $(BUILT_SYSTEMIMAGE) depends on.
@@ -1800,7 +1808,7 @@ endif
 ifeq ($(WITH_GMS),true)
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
 else
-ifneq ($(SLIM_BUILD),)
+ifneq ($(LIQUID_BUILD),)
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := true
 else
     $(INTERNAL_OTA_PACKAGE_TARGET): backuptool := false
@@ -1826,6 +1834,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	@echo -e ${CL_YLW}"Package OTA:"${CL_RST}" $@"
 	$(hide) PATH=$(foreach p,$(INTERNAL_USERIMAGES_BINARY_PATHS),$(p):)$$PATH MKBOOTIMG=$(MKBOOTIMG) \
 	   $(OTA_FROM_TARGET_SCRIPT) -v \
+           $(if $(LIQUID_BUILD), --block) \
 	   --block \
 	   -p $(HOST_OUT) \
 	   -k $(KEY_CERT_PAIR) \
@@ -1834,14 +1843,43 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
-SLIM_TARGET_PACKAGE := $(PRODUCT_OUT)/$(SLIM_MOD_VERSION).zip
+ifneq ($(LIQUID_BUILD),)
+LIQUID_TARGET_PACKAGE := $(PRODUCT_OUT)/$(LIQUID_VERSION)-$(TARGET_PRODUCT).zip
+endif
 
-.PHONY: otapackage bacon
+.PHONY: otapackage liquid
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
+
+liquid: check_liquid otapackage
+ifneq ($(LIQUID_BUILD),)
+	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(LIQUID_TARGET_PACKAGE)
+	$(hide) $(MD5SUM) $(LIQUID_TARGET_PACKAGE) > $(LIQUID_TARGET_PACKAGE).md5sum
+	@echo -e ${CL_BLU}""${CL_BLU}
+	@echo -e ${CL_BLU}"       __                        _______                      __  __ "${CL_BLU}
+	@echo -e ${CL_BLU}"      / /   __ ___  __  __ _ ___/ / ___/ ___ ____  ___  ___  / /_/ /_ "${CL_BLU}
+	@echo -e ${CL_BLU}"     / /   / / __ '/ / / / / __  /\__  \/ __' __ \/__ \/__ \/ __/ __ \ "${CL_BLU}
+	@echo -e ${CL_BLU}"    / /___/ / /_/ / /_/ / / /_/ /___/  / / / / / //_/ //_/ / /_/ / / / "${CL_BLU}
+	@echo -e ${CL_BLU}"   /_____/_/\__, /\__,_/_/\__,_//____ /_/ /_/ /_/\___/\___/\__/_/ /_/ "${CL_BLU}
+	@echo -e ${CL_BLU}"              /_/       Liquid-MarshMallow"${CL_BLU}
+	@echo -e ${CL_BLU}""${CL_BLU}
+	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_CYAN}${CL_RST}
+endif
+
+ifeq ($(LIQUID_CHANGELOG),true)
+# Generate changelog
+	$(hide) ./vendor/liquid/tools/changelog
+	$(hide) mv $(PRODUCT_OUT)/Changelog.txt $(PRODUCT_OUT)/$(LIQUID_VERSION)-$(TARGET_PRODUCT).txt
+endif
+
+check_liquid:
+ifneq ($(TARGET_CUSTOM_RELEASETOOL),)
+        $(error TARGET_CUSTOM_RELEASETOOL is deprecated)
+endif
+
 bacon: otapackage
-	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(SLIM_TARGET_PACKAGE)
-	$(hide) $(MD5SUM) $(SLIM_TARGET_PACKAGE) > $(SLIM_TARGET_PACKAGE).md5sum
-	@echo -e ${CL_CYN}"Package Complete: $(SLIM_TARGET_PACKAGE)"${CL_RST}
+	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(LIQUID_TARGET_PACKAGE)
+	$(hide) $(MD5SUM) $(LIQUID_TARGET_PACKAGE) > $(LIQUID_TARGET_PACKAGE).md5sum
+	@echo -e ${CL_CYN}"Package Complete: $(LIQUID_TARGET_PACKAGE)"${CL_RST}
 
 # -----------------------------------------------------------------
 # The factory package
