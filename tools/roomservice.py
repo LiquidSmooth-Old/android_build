@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2012-2013, The CyanogenMod Project
 # Copyright (C) 2012-2015, SlimRoms Project
+# Copyright (C) 2015, The LiquidSmooth Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,8 +47,8 @@ custom_local_manifest = ".repo/local_manifests/roomservice.xml"
 custom_default_revision = "mm6.0"
 custom_dependencies = "liquid.dependencies"
 default_remote = "gh"
-org_manifest = "LiquidSmooth-Devices"  # leave empty if org is provided in manifest
 org_display = "LiquidSmooth-Devices"  # needed for displaying
+org_manifest = org_display # leave empty if org is provided in manifest
 
 github_auth = None
 
@@ -169,19 +170,24 @@ def add_to_manifest(repos, fallback_branch=None):
     for repo in repos:
         repo_name = repo['repository']
         repo_target = repo['target_path']
+        repo_remote = repo.get("remote", default_remote)
+        repo_branch = repo.get("revision", custom_default_revision)
+        # Hack for LiquidSmooth. Remove me once all repos have been migrated safely
+        repo['branch'] = repo_branch
         if is_in_manifest(repo_target):
             print('already exists: %s' % repo_target)
             continue
 
-        if "/" not in repo_name:
-            repo_name = os.path.join(org_manifest, repo_name)
+        if (repo_remote == "gh") or (repo_remote == "github"):
+            if "/" not in repo_name:
+                repo_name = os.path.join(org_manifest, repo_name)
 
         print('Adding dependency: %s -> %s' % (repo_name, repo_target))
 
         project = ElementTree.Element(
             "project",
             attrib={"path": repo_target,
-                    "remote": "github",
+                    "remote": repo_remote,
                     "name": "%s" % repo_name}
         )
 
@@ -350,14 +356,13 @@ def main():
 
     for repository in repositories:
         repo_name = repository['name']
-
-        if not (repo_name.startswith("device_") and
+        if not (repo_name.startswith("android_device_") and
                 repo_name.endswith("_" + device)):
             continue
         print("Found repository: %s" % repository['name'])
 
         fallback_branch = detect_revision(repository)
-        manufacturer = repo_name[7:-(len(device)+1)]
+        manufacturer = repo_name[15:-(len(device)+1)]
         repo_path = "device/%s/%s" % (manufacturer, device)
         adding = [{'repository': repo_name, 'target_path': repo_path}]
 
